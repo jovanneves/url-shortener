@@ -18,6 +18,7 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState(false);
   const [errorTimeout, setErrorTimeout] = useState(null);
+  const [shakeError, setShakeError] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,6 +78,7 @@ export default function Home() {
     
     setIsSearching(true);
     setSearchError(false);
+    setShakeError(false);
     
     try {
       const baseUrl = window.location.host;
@@ -92,18 +94,39 @@ export default function Home() {
         } else {
           // URL não existe, mostrar erro
           setSearchError(true);
+          setShakeError(true);
+          
+          // Remove a classe de tremor após a animação terminar
+          setTimeout(() => {
+            setShakeError(false);
+          }, 820); // Um pouco mais longo que a duração da animação
+          
           const timeout = setTimeout(() => setSearchError(false), 4000);
           setErrorTimeout(timeout);
         }
       } else {
         // Erro na requisição, mostrar erro
         setSearchError(true);
+        setShakeError(true);
+        
+        // Remove a classe de tremor após a animação terminar
+        setTimeout(() => {
+          setShakeError(false);
+        }, 820);
+        
         const timeout = setTimeout(() => setSearchError(false), 4000);
         setErrorTimeout(timeout);
       }
     } catch (err) {
       console.error(err);
       setSearchError(true);
+      setShakeError(true);
+      
+      // Remove a classe de tremor após a animação terminar
+      setTimeout(() => {
+        setShakeError(false);
+      }, 820);
+      
       const timeout = setTimeout(() => setSearchError(false), 4000);
       setErrorTimeout(timeout);
     } finally {
@@ -186,11 +209,11 @@ export default function Home() {
                           placeholder="Digite o apelido da URL..."
                           value={searchAlias}
                           onChange={(e) => setSearchAlias(e.target.value)}
-                          className={`h-14 rounded-lg pl-12 pr-12 w-full shadow-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-dark-800 border ${
+                          className={`h-14 rounded-lg pl-12 pr-12 w-full shadow-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-dark-800 border transition-all duration-200 ${
                             searchError 
-                              ? 'border-red-300 dark:border-red-500/50 ring-1 ring-red-300 dark:ring-red-500/50' 
+                              ? 'border-red-500 dark:border-red-500 ring-2 ring-red-500/40 dark:ring-red-500/40 bg-red-50 dark:bg-red-900/10' 
                               : 'border-gray-300 dark:border-dark-600 focus:ring-2 focus:ring-[#131a35] focus:border-transparent'
-                          }`}
+                          } ${shakeError ? 'animate-shake' : ''}`}
                           autoFocus
                         />
                         {searchAlias && (

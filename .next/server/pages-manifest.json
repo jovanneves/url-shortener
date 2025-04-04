@@ -4,5 +4,8 @@
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
   "/[code]": "pages/[code].js",
-  "/api/check/[code]": "pages/api/check/[code].js"
+  "/urls": "pages/urls.js",
+  "/api/urls": "pages/api/urls.js",
+  "/stats/[code]": "pages/stats/[code].js",
+  "/api/[code]": "pages/api/[code].js"
 }
