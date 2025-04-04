@@ -270,15 +270,6 @@ export default function Home() {
                   </div>
                 )}
                 
-                {/* Divisor visual com texto */}
-                {!showAddForm && !success && (
-                  <div className="relative flex items-center py-5">
-                    <div className="flex-grow border-t border-gray-200 dark:border-dark-700"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 dark:text-gray-500">ou</span>
-                    <div className="flex-grow border-t border-gray-200 dark:border-dark-700"></div>
-                  </div>
-                )}
-                
                 {/* Form */}
                 {showAddForm && (
                   <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-dark-700 dark:to-dark-800 rounded-xl p-8 border border-blue-100 dark:border-dark-600 shadow-md">
