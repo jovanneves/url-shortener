@@ -13,6 +13,9 @@ export default function UrlsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [urlToDelete, setUrlToDelete] = useState(null);
   const [copySuccess, setCopySuccess] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [urlToEdit, setUrlToEdit] = useState(null);
+  const [editAlias, setEditAlias] = useState('');
   
   // Estado de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,17 +65,30 @@ export default function UrlsPage() {
     if (!urlToDelete) return;
     
     try {
-      // Em uma aplicação real, você enviaria uma requisição DELETE para o backend
-      alert(`Função de exclusão ainda não implementada para o código: ${urlToDelete.urlCode}`);
+      const response = await fetch('/api/urls', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ urlCode: urlToDelete.urlCode }),
+      });
       
-      // Simulando a exclusão (remove o item do estado)
-      setUrls(prevUrls => prevUrls.filter(url => url._id !== urlToDelete._id));
+      const data = await response.json();
       
-      // Fechando o modal
-      setShowDeleteModal(false);
-      setUrlToDelete(null);
+      if (response.ok) {
+        // Remove o item do estado local
+        setUrls(prevUrls => prevUrls.filter(url => url.urlCode !== urlToDelete.urlCode));
+        
+        // Fecha o modal
+        setShowDeleteModal(false);
+        setUrlToDelete(null);
+      } else {
+        console.error('Erro ao excluir URL:', data.error);
+        alert(`Erro ao excluir: ${data.error}`);
+      }
     } catch (error) {
       console.error('Erro ao excluir URL:', error);
+      alert('Ocorreu um erro ao tentar excluir a URL');
     }
   };
 
@@ -122,6 +138,65 @@ export default function UrlsPage() {
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('pt-BR', options);
+  };
+
+  // Função para preparar edição
+  const prepareEdit = (url) => {
+    setUrlToEdit(url);
+    setEditAlias(url.urlCode);
+    setShowEditModal(true);
+  };
+
+  // Função para confirmar edição
+  const confirmEdit = async () => {
+    if (!urlToEdit || !editAlias.trim()) return;
+    
+    // Valida o alias (apenas letras, números, hífens e sublinhados)
+    if (!/^[a-zA-Z0-9-_]+$/.test(editAlias)) {
+      alert('O apelido contém caracteres inválidos. Use apenas letras, números, hífens e sublinhados.');
+      return;
+    }
+    
+    try {
+      // Se o alias não mudou, não faz nada
+      if (editAlias === urlToEdit.urlCode) {
+        setShowEditModal(false);
+        setUrlToEdit(null);
+        return;
+      }
+      
+      const response = await fetch('/api/edit-url', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          oldUrlCode: urlToEdit.urlCode,
+          newUrlCode: editAlias 
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Atualiza o item no estado local
+        setUrls(prevUrls => prevUrls.map(url => 
+          url.urlCode === urlToEdit.urlCode 
+            ? { ...url, urlCode: editAlias, shortUrl: url.shortUrl.replace(url.urlCode, editAlias) } 
+            : url
+        ));
+        
+        // Fecha o modal
+        setShowEditModal(false);
+        setUrlToEdit(null);
+      } else {
+        console.error('Erro ao editar URL:', data.error);
+        alert(`Erro ao editar: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Erro ao editar URL:', error);
+      alert('Ocorreu um erro ao tentar editar a URL');
+    }
   };
 
   if (loading) return (
@@ -423,6 +498,15 @@ export default function UrlsPage() {
                                   </svg>
                                 </Link>
                                 <button 
+                                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                                  title="Editar URL"
+                                  onClick={() => prepareEdit(url)}
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button 
                                   className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                                   title="Excluir URL"
                                   onClick={() => prepareDelete(url)}
@@ -575,6 +659,60 @@ export default function UrlsPage() {
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 border border-transparent rounded-md shadow-sm focus:outline-none"
                 >
                   Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de edição */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true" onClick={() => setShowEditModal(false)}>
+              <div className="absolute inset-0 bg-gray-900 opacity-75 dark:bg-black dark:opacity-80"></div>
+            </div>
+
+            <div className="relative inline-block w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-dark-800 shadow-xl rounded-lg">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                  Editar URL
+                </h3>
+              </div>
+              <div className="mt-2 mb-6">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                  Edite o apelido da sua URL encurtada.
+                </p>
+                <div className="mb-4">
+                  <label htmlFor="alias" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Apelido
+                  </label>
+                  <input
+                    type="text"
+                    id="alias"
+                    value={editAlias}
+                    onChange={(e) => setEditAlias(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-700 dark:text-white"
+                    placeholder="Novo apelido"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  URL original: <span className="font-medium">{urlToEdit?.longUrl}</span>
+                </p>
+              </div>
+              <div className="mt-4 flex justify-end gap-3">
+                <button 
+                  onClick={() => setShowEditModal(false)} 
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={confirmEdit} 
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 border border-transparent rounded-md shadow-sm focus:outline-none"
+                >
+                  Salvar
                 </button>
               </div>
             </div>

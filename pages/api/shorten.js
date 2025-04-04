@@ -46,7 +46,8 @@ export default async function handler(req, res) {
     }
     
     const baseUrl = req.headers.host;
-    const shortUrl = `${baseUrl}/${urlCode}`;
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const shortUrl = `${protocol}://${baseUrl}/${urlCode}`;
 
     // Salva a nova URL encurtada
     const newUrl = new Url({

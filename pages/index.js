@@ -434,8 +434,10 @@ export default function Home() {
                     </a>
                     <button 
                       onClick={() => {
+                        setLongUrl('');
+                        setAlias('');
                         setSuccess(false);
-                        setShowAddForm(false);
+                        setShowAddForm(true);
                       }} 
                       className="flex-1 px-4 py-2 bg-gray-100 dark:bg-dark-600 text-gray-700 dark:text-gray-300 rounded-md shadow-sm font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-dark-500 transition-colors"
                     >
