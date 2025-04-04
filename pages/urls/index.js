@@ -441,7 +441,7 @@ export default function UrlsPage() {
                           <tr key={url.urlCode} className="hover:bg-gray-50 dark:hover:bg-dark-750 transition-colors">
                             <td className="py-3 px-4">
                               <div className="flex items-center">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#131a35]/10 dark:bg-[#131a35]/20 text-[#131a35] dark:text-[#131a35]/80 mr-2">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#131a35]/10 dark:bg-[#131a35]/20 text-[#131a35] dark:text-white mr-2">
                                   {url.urlCode}
                                 </span>
                                 <span className="text-gray-700 dark:text-gray-300 text-sm truncate max-w-[200px]">{url.shortUrl}</span>
