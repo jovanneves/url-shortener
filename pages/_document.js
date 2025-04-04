@@ -13,12 +13,14 @@ export default function Document() {
               (function() {
                 try {
                   var mode = localStorage.getItem('theme');
-                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   
-                  if (mode === 'dark' || (!mode && prefersDark)) {
-                    document.documentElement.classList.add('dark');
-                  } else {
+                  // Usar dark como padrão independente da preferência do sistema
+                  if (mode === 'light') {
                     document.documentElement.classList.remove('dark');
+                  } else {
+                    // Usar dark como padrão
+                    document.documentElement.classList.add('dark');
+                    if (!mode) localStorage.setItem('theme', 'dark');
                   }
                 } catch (e) {}
               })();

@@ -20,7 +20,25 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'URL não encontrada' });
     }
 
-    // Incrementa contador de cliques
+    // Registrar clique com data atual
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalizar para o início do dia
+    
+    // Verificar se já existe registro para hoje
+    const todayRecord = url.clickHistory.find(
+      record => new Date(record.date).setHours(0,0,0,0) === today.getTime()
+    );
+    
+    if (todayRecord) {
+      todayRecord.count += 1;
+    } else {
+      url.clickHistory.push({
+        date: today,
+        count: 1
+      });
+    }
+    
+    // Incrementa contador de cliques total
     url.clicks += 1;
     await url.save();
 

@@ -23,6 +23,16 @@ const UrlSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  clickHistory: [{
+    date: { 
+      type: Date, 
+      required: true 
+    },
+    count: { 
+      type: Number, 
+      default: 1 
+    }
+  }]
 });
 
 export default mongoose.models.Url || mongoose.model('Url', UrlSchema); 

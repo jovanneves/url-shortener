@@ -31,9 +31,8 @@ export default function StatsPage() {
           const data = await response.json();
           setUrlData(data);
           
-          // Gerar dados fictícios para o gráfico
-          // Em um caso real, você buscaria esses dados da API
-          generateMockClicksData(data.clicks);
+          // Usar dados reais de cliques em vez de dados fictícios
+          generateRealClicksData(data.clickHistory || []);
         } else {
           setError('URL não encontrada');
         }
@@ -48,30 +47,26 @@ export default function StatsPage() {
     fetchUrlData();
   }, [code]);
 
-  // Função para gerar dados fictícios de cliques por dia
-  const generateMockClicksData = (totalClicks) => {
+  // Função para gerar dados reais de cliques por dia
+  const generateRealClicksData = (clickHistory) => {
     const days = 7; // Últimos 7 dias
     const now = new Date();
     const data = [];
     
-    // Distribuir cliques pelos dias
-    let remainingClicks = totalClicks;
-    
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      
       const day = date.toLocaleDateString('pt-BR', { weekday: 'short' });
+      const record = clickHistory.find(
+        r => new Date(r.date).setHours(0,0,0,0) === date.getTime()
+      );
       
-      // Calcular cliques para este dia (distribuição aleatória)
-      let dayClicks = 0;
-      if (i === 0) {
-        dayClicks = remainingClicks;
-      } else if (remainingClicks > 0) {
-        dayClicks = Math.floor(Math.random() * (remainingClicks / 2)) + 1;
-        remainingClicks -= dayClicks;
-      }
-      
-      data.push({ day, clicks: dayClicks });
+      data.push({ 
+        day, 
+        clicks: record ? record.count : 0 
+      });
     }
     
     setClicksData(data);
@@ -323,6 +318,40 @@ export default function StatsPage() {
                 </div>
                 <div className="flex items-end justify-between h-48 px-4 pt-6 pb-8 relative">
                   <div className="absolute left-0 right-0 bottom-10 border-b border-dashed border-gray-200 dark:border-dark-600"></div>
+                  
+                  {/* Linha que conecta os pontos */}
+                  <svg className="absolute bottom-10 left-0 right-0 h-[calc(100%-40px)] w-full" style={{ pointerEvents: 'none' }}>
+                    <polyline 
+                      points={clicksData.map((item, index) => {
+                        const x = (100 / (clicksData.length - 1) * index) + '%';
+                        const height = getBarHeight(item.clicks);
+                        const y = (100 - height) + '%';
+                        return `${x},${y}`;
+                      }).join(' ')}
+                      fill="none"
+                      stroke="#131a35"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="dark:stroke-[#131a35]/80"
+                    />
+                    {clicksData.map((item, index) => {
+                      const x = (100 / (clicksData.length - 1) * index) + '%';
+                      const height = getBarHeight(item.clicks);
+                      const y = (100 - height) + '%';
+                      return (
+                        <circle 
+                          key={index}
+                          cx={x} 
+                          cy={y} 
+                          r="4" 
+                          fill="#131a35" 
+                          className="dark:fill-[#131a35]/80"
+                        />
+                      );
+                    })}
+                  </svg>
+                  
                   {clicksData.map((item, index) => (
                     <div key={index} className="flex flex-col items-center">
                       <div className="h-full flex items-end">

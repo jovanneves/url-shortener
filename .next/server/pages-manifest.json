@@ -5,7 +5,5 @@
   "/": "pages/index.js",
   "/[code]": "pages/[code].js",
   "/urls": "pages/urls.js",
-  "/api/urls": "pages/api/urls.js",
-  "/stats/[code]": "pages/stats/[code].js",
-  "/api/[code]": "pages/api/[code].js"
+  "/api/urls": "pages/api/urls.js"
 }

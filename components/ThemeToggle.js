@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 
 const ThemeToggle = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     // Verificar preferência salva no localStorage
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
+    // Se o tema salvo for light, usar light, caso contrário usar dark (padrão)
+    if (savedTheme === 'light') {
       setDarkMode(false);
       document.documentElement.classList.remove('dark');
+    } else {
+      setDarkMode(true);
+      document.documentElement.classList.add('dark');
+      if (!savedTheme) localStorage.setItem('theme', 'dark');
     }
   }, []);
 
