@@ -19,6 +19,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
+        <title>URL Shortener</title>
         <style>{globalStyles}</style>
       </Head>
       <Component {...pageProps} />
