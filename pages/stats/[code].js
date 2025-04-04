@@ -25,7 +25,7 @@ export default function StatsPage() {
       if (!code) return;
 
       try {
-        const response = await fetch(`/api/${code}`);
+        const response = await fetch(`/api/${code}?stats=true`);
         
         if (response.ok) {
           const data = await response.json();

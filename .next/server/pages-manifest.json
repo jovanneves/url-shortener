@@ -2,11 +2,11 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/[code]": "pages/[code].js",
   "/": "pages/index.js",
+  "/[code]": "pages/[code].js",
   "/urls": "pages/urls.js",
   "/api/shorten": "pages/api/shorten.js",
   "/api/urls": "pages/api/urls.js",
-  "/stats/[code]": "pages/stats/[code].js",
-  "/api/[code]": "pages/api/[code].js"
+  "/api/[code]": "pages/api/[code].js",
+  "/stats/[code]": "pages/stats/[code].js"
 }

@@ -12,7 +12,7 @@ export default function RedirectPage() {
       if (!code) return;
 
       try {
-        const response = await fetch(`/api/${code}`);
+        const response = await fetch(`/api/${code}?stats=false`);
         
         if (response.ok) {
           const data = await response.json();

@@ -641,7 +641,7 @@ export default function UrlsPage() {
               </div>
               <div className="mt-2 mb-6">
                 <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  Tem certeza que deseja excluir a URL <span className="font-medium text-[#131a35] dark:text-[#131a35]/80">{urlToDelete?.urlCode}</span>?
+                  Tem certeza que deseja excluir a URL <span className="font-medium px-1.5 py-0.5 rounded bg-gray-100 text-gray-800">{urlToDelete?.urlCode}</span>?
                 </p>
                 <p className="text-sm text-red-500 dark:text-red-400 font-medium">
                   Esta ação não pode ser desfeita.

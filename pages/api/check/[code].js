@@ -23,6 +23,35 @@ export default async function handler(req, res) {
 
     // Retorna se existe ou não
     if (url) {
+      // Se a URL existe e foi requisitada para ser acessada, registra um clique
+      if (req.query.stats === 'false') {
+        // Registrar clique com data atual
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalizar para o início do dia
+        
+        // Verificar se já existe registro para hoje
+        const todayRecord = url.clickHistory.find(
+          record => new Date(record.date).setHours(0,0,0,0) === today.getTime()
+        );
+        
+        if (todayRecord) {
+          todayRecord.count += 1;
+        } else {
+          url.clickHistory.push({
+            date: today,
+            count: 1
+          });
+        }
+        
+        // Incrementa contador de cliques total
+        url.clicks += 1;
+        
+        // Salva as mudanças no banco de dados
+        await url.save();
+        
+        console.log(`Clique registrado via verificação para URL: ${code}`);
+      }
+
       return res.status(200).json({ 
         exists: true, 
         longUrl: url.longUrl,

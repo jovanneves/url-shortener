@@ -84,7 +84,7 @@ export default function Home() {
       const baseUrl = window.location.host;
       const urlToCheck = `${baseUrl}/${searchTerm}`;
       
-      const response = await fetch(`/api/check/${searchTerm}`);
+      const response = await fetch(`/api/check/${searchTerm}?stats=false`);
       
       if (response.ok) {
         const data = await response.json();
