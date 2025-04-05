@@ -2,6 +2,8 @@ import dbConnect from '../../lib/mongodb';
 import Url from '../../models/Url';
 import { removeFromCache, setInCache, getFromCache } from '../../lib/redis';
 import { pendingClicks, lastUpdateTimes } from './[code]';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
 
 export default async function handler(req, res) {
   // Verifica o método HTTP
@@ -13,7 +15,13 @@ export default async function handler(req, res) {
   await dbConnect();
 
   try {
-    const { oldUrlCode, newUrlCode, longUrl } = req.body;
+    // Verifica a sessão do usuário
+    const session = await getServerSession(req, res, authOptions);
+    if (!session?.user) {
+      return res.status(401).json({ error: 'Não autorizado' });
+    }
+    
+    const { oldUrlCode, newUrlCode, longUrl, isPublic } = req.body;
 
     // Valida os dados
     if (!oldUrlCode || !newUrlCode) {
@@ -42,8 +50,18 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'URL não encontrada' });
       }
       
+      // Verifica se o usuário tem permissão para modificar esta URL
+      if (dbUrl.userId !== session.user.id && !session.user.isAdmin) {
+        return res.status(403).json({ error: 'Você não tem permissão para editar esta URL' });
+      }
+      
       url = dbUrl.toObject();
     } else {
+      // Verifica permissão usando os dados do cache
+      if (url.userId !== session.user.id && !session.user.isAdmin) {
+        return res.status(403).json({ error: 'Você não tem permissão para editar esta URL' });
+      }
+      
       updatedFromCache = true;
       console.log(`Cache hit para edição da URL: ${oldUrlCode}`);
     }
@@ -71,8 +89,13 @@ export default async function handler(req, res) {
     const updatedData = {
       urlCode: newUrlCode,
       shortUrl: newShortUrl,
-      longUrl: longUrl || url.longUrl // Permite atualizar a URL longa se fornecida
+      longUrl: longUrl || url.longUrl, // Permite atualizar a URL longa se fornecida
     };
+    
+    // Atualiza a visibilidade se o valor foi fornecido
+    if (typeof isPublic === 'boolean') {
+      updatedData.isPublic = isPublic;
+    }
     
     // Atualiza no banco de dados mantendo os clicks e o histórico
     const updatedUrl = await Url.findOneAndUpdate(
@@ -111,6 +134,9 @@ export default async function handler(req, res) {
     if (pendingClicksCount > 0) {
       pendingClicks[newUrlCode] = pendingClicksCount;
     }
+    
+    // Marca a URL como pertencente ao usuário para a UI
+    cacheObject.isOwner = true;
     
     console.log(`URL editada com sucesso: ${oldUrlCode} -> ${newUrlCode}`);
     return res.status(200).json({ 

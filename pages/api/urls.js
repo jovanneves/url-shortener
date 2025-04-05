@@ -1,6 +1,8 @@
 import dbConnect from '../../lib/mongodb';
 import Url from '../../models/Url';
 import { removeFromCache, getFromCache, setInCache, getKeysFromRedis } from '../../lib/redis';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
 
 export default async function handler(req, res) {
   // Conecta ao banco de dados
@@ -9,52 +11,97 @@ export default async function handler(req, res) {
   // Verifica o método HTTP
   if (req.method === 'GET') {
     try {
+      // Verifica se há um usuário logado
+      const session = await getServerSession(req, res, authOptions);
+      const userId = session?.user?.id;
+
+      // Parâmetros da requisição
       const useOnlyCache = req.query.useCache === 'true';
-      
-      // Tenta primeiro encontrar todas as URLs no cache
-      const urlKeys = await getKeysFromCache('url:*');
-      const urls = [];
-      
-      if (urlKeys && urlKeys.length > 0) {
-        // Recupera todas as URLs do cache
-        for (const key of urlKeys) {
-          const url = await getFromCache(key);
-          if (url) {
-            urls.push(url);
-          }
-        }
+      const showAll = req.query.all === 'true'; // Mostrar todas as URLs (apenas para admin)
+      const onlyPublic = req.query.onlyPublic === 'true'; // Mostrar apenas URLs públicas
+      const onlyMine = req.query.onlyMine === 'true'; // Mostrar apenas URLs do usuário
+
+      // Se não houver usuário logado, retorna apenas URLs públicas
+      if (!userId) {
+        console.log('Usuário não logado, buscando apenas URLs públicas');
+        const publicUrls = await Url.find({ isPublic: true }).sort({ createdAt: -1 });
+        return res.status(200).json(publicUrls);
+      }
+
+      // Prepara a consulta com base nos parâmetros
+      let query = {};
+      let results = [];
+
+      // Administradores podem ver todas as URLs se solicitado
+      if (session?.user?.isAdmin && showAll) {
+        console.log('Administrador solicitando todas as URLs');
+        const allUrls = await Url.find({}).sort({ createdAt: -1 });
         
-        if (urls.length > 0) {
-          console.log(`Retornando ${urls.length} URLs do cache`);
-          // Ordena por data de criação (mais recentes primeiro)
-          return res.status(200).json(urls.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-        }
+        // Marca as URLs que pertencem ao usuário logado para UI diferenciada
+        results = allUrls.map(url => {
+          const urlObj = url.toObject();
+          urlObj.isOwner = urlObj.userId === userId;
+          return urlObj;
+        });
+      }
+      // Apenas URLs do usuário (públicas e privadas) se solicitado
+      else if (onlyMine) {
+        console.log(`Buscando apenas URLs do usuário: ${userId}`);
+        const userUrls = await Url.find({ userId }).sort({ createdAt: -1 });
+        
+        // Todas as URLs retornadas pertencem ao usuário
+        results = userUrls.map(url => {
+          const urlObj = url.toObject();
+          urlObj.isOwner = true;
+          return urlObj;
+        });
+      }
+      // Apenas URLs públicas se solicitado
+      else if (onlyPublic) {
+        console.log('Solicitando apenas URLs públicas');
+        const publicUrls = await Url.find({ isPublic: true }).sort({ createdAt: -1 });
+        
+        // Marca as URLs que pertencem ao usuário logado
+        results = publicUrls.map(url => {
+          const urlObj = url.toObject();
+          urlObj.isOwner = urlObj.userId === userId;
+          return urlObj;
+        });
+      }
+      // Caso contrário (comportamento padrão), retorna URLs do usuário + URLs públicas
+      else {
+        console.log('Buscando URLs do usuário e URLs públicas');
+        
+        // Busca URLs do usuário (privadas e públicas)
+        const userUrls = await Url.find({ userId }).sort({ createdAt: -1 });
+        
+        // Busca URLs públicas que não pertencem ao usuário
+        const publicUrls = await Url.find({ 
+          isPublic: true,
+          userId: { $ne: userId } // não é igual ao userId
+        }).sort({ createdAt: -1 });
+        
+        // Combina os resultados
+        const userUrlObjects = userUrls.map(url => {
+          const urlObj = url.toObject();
+          urlObj.isOwner = true;
+          return urlObj;
+        });
+        
+        const publicUrlObjects = publicUrls.map(url => {
+          const urlObj = url.toObject();
+          urlObj.isOwner = false;
+          return urlObj;
+        });
+        
+        // Combina e ordena por data de criação (mais recente primeiro)
+        results = [...userUrlObjects, ...publicUrlObjects].sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
       }
       
-      // Se não houver dados no cache ou não forem encontradas URLs, busca no banco
-      // a menos que useOnlyCache seja true
-      if (!useOnlyCache) {
-        console.log('Buscando URLs no banco de dados');
-        // Busca todas as URLs ordenadas pela data de criação (mais recentes primeiro)
-        const dbUrls = await Url.find({}).sort({ createdAt: -1 });
-        
-        if (dbUrls && dbUrls.length > 0) {
-          console.log(`Encontradas ${dbUrls.length} URLs no banco de dados, armazenando no cache`);
-          // Armazena cada URL no cache
-          for (const url of dbUrls) {
-            await setInCache(`url:${url.urlCode}`, url.toObject(), 3600);
-          }
-          
-          return res.status(200).json(dbUrls);
-        } else {
-          console.log('Nenhuma URL encontrada no banco de dados');
-          return res.status(200).json([]);
-        }
-      } else {
-        // Se foi solicitado apenas cache e não encontrou nada, retorna array vazio
-        console.log('Requisição solicitada apenas do cache, sem resultados encontrados');
-        return res.status(200).json([]);
-      }
+      console.log(`Retornando ${results.length} URLs no total`);
+      return res.status(200).json(results);
     } catch (error) {
       console.error('Erro ao buscar URLs:', error);
       return res.status(500).json({ error: 'Erro no servidor' });
@@ -62,18 +109,32 @@ export default async function handler(req, res) {
   } 
   else if (req.method === 'DELETE') {
     try {
+      // Verifica se há um usuário logado
+      const session = await getServerSession(req, res, authOptions);
+      if (!session?.user) {
+        return res.status(401).json({ error: 'Não autorizado' });
+      }
+      
       const { urlCode } = req.body;
       
       if (!urlCode) {
         return res.status(400).json({ error: 'Código da URL não fornecido' });
       }
       
-      // Busca e remove a URL pelo código
-      const deletedUrl = await Url.findOneAndDelete({ urlCode });
+      // Busca a URL pelo código
+      const url = await Url.findOne({ urlCode });
       
-      if (!deletedUrl) {
+      if (!url) {
         return res.status(404).json({ error: 'URL não encontrada' });
       }
+      
+      // Verifica se o usuário tem permissão para excluir
+      if (url.userId !== session.user.id && !session.user.isAdmin) {
+        return res.status(403).json({ error: 'Você não tem permissão para excluir esta URL' });
+      }
+      
+      // Remove a URL
+      await Url.deleteOne({ urlCode });
       
       // Remove a URL do cache
       await removeFromCache(`url:${urlCode}`);
@@ -82,6 +143,50 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Erro ao excluir URL' });
+    }
+  }
+  else if (req.method === 'PUT') {
+    try {
+      // Verifica se há um usuário logado
+      const session = await getServerSession(req, res, authOptions);
+      if (!session?.user) {
+        return res.status(401).json({ error: 'Não autorizado' });
+      }
+
+      const { urlCode, isPublic } = req.body;
+      
+      if (!urlCode) {
+        return res.status(400).json({ error: 'Código da URL não fornecido' });
+      }
+      
+      // Busca a URL pelo código
+      const url = await Url.findOne({ urlCode });
+      
+      if (!url) {
+        return res.status(404).json({ error: 'URL não encontrada' });
+      }
+      
+      // Verifica se o usuário tem permissão para modificar
+      if (url.userId !== session.user.id && !session.user.isAdmin) {
+        return res.status(403).json({ error: 'Você não tem permissão para modificar esta URL' });
+      }
+      
+      // Atualiza a visibilidade da URL
+      url.isPublic = isPublic;
+      await url.save();
+      
+      // Atualiza o cache
+      await removeFromCache(`url:${urlCode}`);
+      await setInCache(`url:${urlCode}`, url.toObject(), 3600);
+      
+      // Retorna a URL atualizada com a flag isOwner
+      const urlObj = url.toObject();
+      urlObj.isOwner = true;
+      
+      return res.status(200).json({ success: true, message: 'URL atualizada com sucesso', url: urlObj });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Erro ao atualizar URL' });
     }
   }
   else {

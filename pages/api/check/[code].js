@@ -1,6 +1,8 @@
 import dbConnect from '../../../lib/mongodb';
 import Url from '../../../models/Url';
 import { getFromCache, setInCache } from '../../../lib/redis';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 // Importa as variáveis globais do outro arquivo
 import { 
@@ -19,6 +21,11 @@ export default async function handler(req, res) {
 
   try {
     const { code } = req.query;
+    
+    // Verifica a sessão do usuário
+    const session = await getServerSession(req, res, authOptions);
+    const userId = session?.user?.id;
+    
     // Parâmetro que indica se devemos usar apenas o cache sem verificar o banco de dados
     const useOnlyCache = req.query.useCache === 'true';
 
@@ -49,6 +56,12 @@ export default async function handler(req, res) {
         return res.status(200).json({ exists: false });
       }
       
+      // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
+      if (!dbUrl.isPublic && dbUrl.userId && dbUrl.userId !== userId) {
+        // Para URLs privadas, fingimos que não existe para não-proprietários
+        return res.status(200).json({ exists: false, isPrivate: true });
+      }
+      
       // Converte o modelo do Mongoose para um objeto simples
       url = dbUrl.toObject();
       
@@ -67,6 +80,12 @@ export default async function handler(req, res) {
     } else {
       fromCache = true;
       console.log(`Cache hit no endpoint de verificação para ${code}`);
+      
+      // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
+      if (url && !url.isPublic && url.userId && url.userId !== userId) {
+        // Para URLs privadas, fingimos que não existe para não-proprietários
+        return res.status(200).json({ exists: false, isPrivate: true });
+      }
       
       // Se não tem cliques pendentes, inicializa
       if (pendingClicks[code] === undefined) {
@@ -117,7 +136,9 @@ export default async function handler(req, res) {
       exists: true, 
       longUrl: url.longUrl,
       shortUrl: url.shortUrl,
-      clicks: url.clicks
+      clicks: url.clicks,
+      isPublic: url.isPublic,
+      userId: url.userId
     });
   } catch (error) {
     console.error('Erro ao verificar URL:', error);

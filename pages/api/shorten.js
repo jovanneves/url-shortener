@@ -2,6 +2,8 @@ import dbConnect from '../../lib/mongodb';
 import Url from '../../models/Url';
 import { nanoid } from 'nanoid';
 import { setInCache } from '../../lib/redis';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
 
 export default async function handler(req, res) {
   // Verifica o método HTTP
@@ -13,7 +15,10 @@ export default async function handler(req, res) {
   await dbConnect();
 
   try {
-    const { longUrl, alias } = req.body;
+    // Verifica se há um usuário logado
+    const session = await getServerSession(req, res, authOptions);
+    
+    const { longUrl, alias, isPublic = true } = req.body;
 
     // Valida a URL
     if (!longUrl) {
@@ -36,10 +41,28 @@ export default async function handler(req, res) {
       }
       urlCode = alias;
     } else {
-      // Tenta encontrar se a URL já foi encurtada (apenas quando não tem alias específico)
-      const existingUrl = await Url.findOne({ longUrl });
-      if (existingUrl) {
-        return res.status(200).json(existingUrl);
+      // Para URLs não-personalizadas, verificamos se o usuário já encurtou esta URL
+      // apenas se ele estiver logado e for a mesma pessoa
+      if (session?.user) {
+        const existingUserUrl = await Url.findOne({ 
+          longUrl,
+          userId: session.user.id
+        });
+        
+        if (existingUserUrl) {
+          return res.status(200).json(existingUserUrl);
+        }
+      } else {
+        // Para usuários não logados, verificamos se a URL já existe e é pública
+        const existingPublicUrl = await Url.findOne({ 
+          longUrl,
+          isPublic: true,
+          userId: { $exists: false } // apenas URLs anônimas
+        });
+        
+        if (existingPublicUrl) {
+          return res.status(200).json(existingPublicUrl);
+        }
       }
       
       // Gera um código aleatório
@@ -50,15 +73,24 @@ export default async function handler(req, res) {
     const protocol = req.headers['x-forwarded-proto'] || 'http';
     const shortUrl = `${protocol}://${baseUrl}/${urlCode}`;
 
-    // Salva a nova URL encurtada
-    const newUrl = new Url({
+    // Prepara os dados da nova URL encurtada
+    const urlData = {
       urlCode,
       longUrl,
       shortUrl,
       clicks: 0,
       createdAt: new Date(),
-    });
+      isPublic: Boolean(isPublic), // Converte para boolean
+    };
+    
+    // Adiciona informações do usuário se estiver logado
+    if (session?.user) {
+      urlData.userId = session.user.id;
+      urlData.userName = session.user.name || session.user.email.split('@')[0];
+    }
 
+    // Salva a nova URL encurtada
+    const newUrl = new Url(urlData);
     await newUrl.save();
     
     // Adiciona a nova URL ao cache

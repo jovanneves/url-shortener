@@ -28,34 +28,52 @@ function UrlsDashboard() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [urlToEdit, setUrlToEdit] = useState(null);
   const [editAlias, setEditAlias] = useState('');
+  const [editIsPublic, setEditIsPublic] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [updatingVisibility, setUpdatingVisibility] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all');
   
   // Estado de paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
-  useEffect(() => {
-    async function fetchUrls() {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/urls?useCache=true');
-        
-        if (response.ok) {
-          const data = await response.json();
-          setUrls(data);
-        } else {
-          setError('Erro ao carregar URLs');
-        }
-      } catch (error) {
-        console.error('Erro ao buscar URLs:', error);
-        setError('Erro ao buscar URLs');
-      } finally {
-        setLoading(false);
-      }
-    }
+  // No state
+  const [longUrlEdit, setLongUrlEdit] = useState('');
 
-    fetchUrls();
-  }, []);
+  useEffect(() => {
+    fetchUrls(activeFilter);
+  }, [activeFilter]);
+
+  async function fetchUrls(filter = 'all') {
+    try {
+      setLoading(true);
+      let queryParams = 'useCache=true';
+      
+      if (filter === 'mine') {
+        queryParams += '&onlyMine=true';
+      } else if (filter === 'public') {
+        queryParams += '&onlyPublic=true';
+      }
+      
+      if (session?.user?.isAdmin && filter === 'all') {
+        queryParams += '&all=true';
+      }
+      
+      const response = await fetch(`/api/urls?${queryParams}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUrls(data);
+      } else {
+        setError('Erro ao carregar URLs');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar URLs:', error);
+      setError('Erro ao buscar URLs');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Função para copiar URL encurtada
   const copyToClipboard = (url, id) => {
@@ -157,12 +175,14 @@ function UrlsDashboard() {
   const prepareEdit = (url) => {
     setUrlToEdit(url);
     setEditAlias(url.urlCode);
+    setEditIsPublic(url.isPublic);
+    setLongUrlEdit(url.longUrl); // Adicionar estado para a URL longa
     setShowEditModal(true);
   };
 
   // Função para confirmar edição
   const confirmEdit = async () => {
-    if (!urlToEdit || !editAlias.trim()) return;
+    if (!urlToEdit || !editAlias.trim() || !longUrlEdit.trim()) return;
     
     // Valida o alias (apenas letras, números, hífens e sublinhados)
     if (!/^[a-zA-Z0-9-_]+$/.test(editAlias)) {
@@ -171,13 +191,22 @@ function UrlsDashboard() {
     }
     
     try {
-      // Se o alias não mudou, não faz nada
-      if (editAlias === urlToEdit.urlCode) {
+      // Se o alias, URL longa e a visibilidade não mudaram, não faz nada
+      if (editAlias === urlToEdit.urlCode && editIsPublic === urlToEdit.isPublic && longUrlEdit === urlToEdit.longUrl) {
         setShowEditModal(false);
         setUrlToEdit(null);
         return;
       }
       
+      // Se apenas a visibilidade mudou
+      if (editAlias === urlToEdit.urlCode && editIsPublic !== urlToEdit.isPublic && longUrlEdit === urlToEdit.longUrl) {
+        await toggleUrlVisibility(urlToEdit, true);
+        setShowEditModal(false);
+        setUrlToEdit(null);
+        return;
+      }
+      
+      // Se o alias ou a URL longa mudou
       const response = await fetch('/api/edit-url', {
         method: 'PUT',
         headers: {
@@ -185,7 +214,9 @@ function UrlsDashboard() {
         },
         body: JSON.stringify({ 
           oldUrlCode: urlToEdit.urlCode,
-          newUrlCode: editAlias 
+          newUrlCode: editAlias,
+          longUrl: longUrlEdit,
+          isPublic: editIsPublic
         }),
       });
       
@@ -193,7 +224,6 @@ function UrlsDashboard() {
       
       if (response.ok) {
         // Atualiza o item no estado local usando os dados retornados da API
-        // que incluem os valores mais recentes do cache
         setUrls(prevUrls => prevUrls.map(url => 
           url.urlCode === urlToEdit.urlCode 
             ? data.url 
@@ -205,7 +235,7 @@ function UrlsDashboard() {
         setUrlToEdit(null);
         
         // Atualiza a lista completa para garantir sincronização
-        refreshUrls();
+        fetchUrls(activeFilter);
       } else {
         console.error('Erro ao editar URL:', data.error);
         alert(`Erro ao editar: ${data.error}`);
@@ -242,6 +272,51 @@ function UrlsDashboard() {
       }
     } catch (error) {
       console.error('Erro ao atualizar URL do banco de dados:', error);
+    }
+  };
+
+  // Função para alternar a visibilidade de uma URL
+  const toggleUrlVisibility = async (url, fromEditModal = false) => {
+    if (updatingVisibility === url.urlCode && !fromEditModal) return; // Evita múltiplos cliques
+    
+    if (!fromEditModal) {
+      setUpdatingVisibility(url.urlCode);
+    }
+    
+    try {
+      const newIsPublic = fromEditModal ? editIsPublic : !url.isPublic;
+      
+      const response = await fetch('/api/urls', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          urlCode: url.urlCode, 
+          isPublic: newIsPublic 
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Atualiza o item no estado local
+        setUrls(prevUrls => prevUrls.map(item => 
+          item.urlCode === url.urlCode 
+            ? { ...item, isPublic: newIsPublic } 
+            : item
+        ));
+      } else {
+        console.error('Erro ao atualizar visibilidade:', data.error);
+        alert(`Erro ao atualizar visibilidade: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar visibilidade:', error);
+      alert('Ocorreu um erro ao atualizar a visibilidade da URL');
+    } finally {
+      if (!fromEditModal) {
+        setUpdatingVisibility(null);
+      }
     }
   };
 
@@ -473,6 +548,48 @@ function UrlsDashboard() {
           <div className="flex-1 p-8">
             {renderHeader()}
 
+            <div className="mb-6 flex flex-wrap gap-2">
+              <button
+                onClick={() => {
+                  setActiveFilter('all');
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
+                }`}
+              >
+                Todas as URLs
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter('mine');
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'mine'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
+                }`}
+              >
+                Minhas URLs
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter('public');
+                  setCurrentPage(1);
+                }}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeFilter === 'public'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
+                }`}
+              >
+                URLs Públicas
+              </button>
+            </div>
+
             <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
               <div className="relative w-full md:w-auto md:flex-1 max-w-md">
                 <input
@@ -570,51 +687,140 @@ function UrlsDashboard() {
                     <table className="w-full">
                       <thead className="bg-gray-50 dark:bg-dark-700 border-b border-gray-200 dark:border-dark-600">
                         <tr>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">URL Encurtada</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">URL Original</th>
-                          <th className="text-center py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">Cliques</th>
-                          <th className="text-left py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">Data de Criação</th>
-                          <th className="text-center py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">Ações</th>
+                          <th scope="col" className="px-6 py-3 text-left" onClick={() => handleSort('urlCode')}>
+                            <div className="flex items-center cursor-pointer group">
+                              URL encurtada
+                              {sortBy === 'urlCode' && (
+                                <span className="ml-1">
+                                  {sortOrder === 'asc' ? '↑' : '↓'}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left">URL original</th>
+                          <th scope="col" className="px-6 py-3 text-left" onClick={() => handleSort('clicks')}>
+                            <div className="flex items-center cursor-pointer group">
+                              Cliques
+                              {sortBy === 'clicks' && (
+                                <span className="ml-1">
+                                  {sortOrder === 'asc' ? '↑' : '↓'}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left" onClick={() => handleSort('createdAt')}>
+                            <div className="flex items-center cursor-pointer group">
+                              Criada em
+                              {sortBy === 'createdAt' && (
+                                <span className="ml-1">
+                                  {sortOrder === 'asc' ? '↑' : '↓'}
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-center">Visibilidade</th>
+                          <th scope="col" className="px-6 py-3 text-right">Ações</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 dark:divide-dark-600">
-                        {currentItems.map((url) => (
-                          <tr key={url.urlCode} className="hover:bg-gray-50 dark:hover:bg-dark-750 transition-colors">
-                            <td className="py-3 px-4">
-                              <div className="flex items-center">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#131a35]/10 dark:bg-[#131a35]/20 text-[#131a35] dark:text-white mr-2">
-                                  {url.urlCode}
-                                </span>
-                                <span className="text-gray-700 dark:text-gray-300 text-sm truncate max-w-[200px]">{url.shortUrl}</span>
+                        {currentItems.length === 0 ? (
+                          <tr className="bg-white dark:bg-dark-800">
+                            <td colSpan="6" className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                              <div className="flex flex-col items-center">
+                                <svg className="w-12 h-12 mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                <p className="font-medium">Nenhuma URL encontrada</p>
+                                <p className="text-sm mt-1">As URLs que você encurtar aparecerão aqui</p>
                               </div>
                             </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center">
-                                <span className="text-gray-700 dark:text-gray-300 text-sm truncate max-w-[300px]">{url.longUrl}</span>
+                          </tr>
+                        ) : (
+                          currentItems.map((url) => (
+                            <tr key={url.urlCode} className="bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-dark-700">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <button
+                                    onClick={() => copyToClipboard(url.shortUrl, url.urlCode)}
+                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center group"
+                                  >
+                                    <span className="truncate max-w-[180px] sm:max-w-xs">{url.shortUrl}</span>
+                                    <span className="ml-2 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                      {copySuccess === url.urlCode ? (
+                                        <svg className="w-5 h-5 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      ) : (
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                        </svg>
+                                      )}
+                                    </span>
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
                                 <a 
                                   href={url.longUrl} 
                                   target="_blank" 
                                   rel="noopener noreferrer" 
-                                  className="ml-2 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400"
-                                  title="Visitar URL"
+                                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 truncate block max-w-[150px] sm:max-w-[250px] md:max-w-xs"
+                                  title={url.longUrl}
                                 >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                  </svg>
+                                  {url.longUrl}
                                 </a>
-                              </div>
-                            </td>
-                            <td className="py-3 px-4 text-center">
-                              <span className="inline-flex items-center justify-center min-w-[2.5rem] px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-dark-700 text-gray-800 dark:text-gray-300">
-                                {url.clicks}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
-                              {formatDate(url.createdAt)}
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center justify-center space-x-2">
-                                <div className="flex items-center bg-gray-100 dark:bg-dark-700 rounded-lg p-1">
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                <div className="flex items-center">
+                                  <svg className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15l-2 5L9 9l11 4-5 2zm0 0L12 12" />
+                                  </svg>
+                                  {url.clicks}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                                {formatDate(url.createdAt)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center">
+                                <button 
+                                  onClick={() => toggleUrlVisibility(url)}
+                                  disabled={updatingVisibility === url.urlCode || !url.isOwner}
+                                  className={`flex items-center justify-center mx-auto px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                    !url.isOwner 
+                                      ? 'bg-gray-100 text-gray-400 dark:bg-gray-800/20 dark:text-gray-500 cursor-not-allowed opacity-70' 
+                                      : url.isPublic 
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-800/30' 
+                                        : 'bg-gray-100 text-gray-800 dark:bg-gray-800/40 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800/50'
+                                  }`}
+                                >
+                                  {updatingVisibility === url.urlCode ? (
+                                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                  ) : (
+                                    <>
+                                      {url.isPublic ? (
+                                        <>
+                                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                          </svg>
+                                          Pública
+                                        </>
+                                      ) : (
+                                        <>
+                                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                          </svg>
+                                          Privada
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                </button>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                                <div className="flex justify-end space-x-2">
                                   <button 
                                     onClick={() => refreshUrlFromDatabase(url.urlCode)} 
                                     className="p-1.5 rounded-md hover:bg-white dark:hover:bg-dark-600 text-gray-500 dark:text-gray-400 transition-colors"
@@ -667,10 +873,10 @@ function UrlsDashboard() {
                                     </svg>
                                   </button>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -820,53 +1026,113 @@ function UrlsDashboard() {
 
       {/* Modal de edição */}
       {showEditModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true" onClick={() => setShowEditModal(false)}>
-              <div className="absolute inset-0 bg-gray-900 opacity-75 dark:bg-black dark:opacity-80"></div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-800 rounded-lg shadow-xl w-full max-w-md">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-dark-700">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Editar URL</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-
-            <div className="relative inline-block w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-dark-800 shadow-xl rounded-lg">
-              <div className="mb-4">
-                <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
-                  Editar URL
-                </h3>
-              </div>
-              <div className="mt-2 mb-6">
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
-                  Edite o apelido da sua URL encurtada.
-                </p>
-                <div className="mb-4">
-                  <label htmlFor="alias" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Apelido
-                  </label>
+            <div className="p-6 space-y-4">
+              <div>
+                <label htmlFor="editAlias" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Apelido da URL
+                </label>
+                <div className="flex rounded-md shadow-sm">
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 text-sm">
+                    {window.location.origin}/
+                  </span>
                   <input
+                    id="editAlias"
                     type="text"
-                    id="alias"
                     value={editAlias}
                     onChange={(e) => setEditAlias(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-dark-700 dark:text-white"
-                    placeholder="Novo apelido"
+                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-gray-900 dark:text-white"
                   />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  URL original: <span className="font-medium">{urlToEdit?.longUrl}</span>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Use apenas letras, números, hífens e sublinhados.
                 </p>
               </div>
-              <div className="mt-4 flex justify-end gap-3">
-                <button 
-                  onClick={() => setShowEditModal(false)} 
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  onClick={confirmEdit} 
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 border border-transparent rounded-md shadow-sm focus:outline-none"
-                >
-                  Salvar
-                </button>
+
+              {/* Campo de URL original */}
+              <div className="mt-4">
+                <label htmlFor="longUrlEdit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  URL Original
+                </label>
+                <input
+                  id="longUrlEdit"
+                  type="url"
+                  value={longUrlEdit}
+                  onChange={(e) => setLongUrlEdit(e.target.value)}
+                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-gray-900 dark:text-white"
+                  placeholder="https://exemplo.com/minha-pagina"
+                />
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  URL completa para onde o link encurtado irá redirecionar.
+                </p>
               </div>
+              
+              {/* Campo de visibilidade */}
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                  Visibilidade
+                </label>
+                <div className="flex space-x-4">
+                  <div className="flex items-center">
+                    <input
+                      id="editPublic"
+                      name="editVisibility"
+                      type="radio"
+                      checked={editIsPublic}
+                      onChange={() => setEditIsPublic(true)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label htmlFor="editPublic" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                      Pública
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Qualquer pessoa pode acessar
+                      </p>
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="editPrivate"
+                      name="editVisibility"
+                      type="radio"
+                      checked={!editIsPublic}
+                      onChange={() => setEditIsPublic(false)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <label htmlFor="editPrivate" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                      Privada
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Apenas você pode acessar
+                      </p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 dark:bg-dark-750 flex justify-end gap-2 rounded-b-lg">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmEdit}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Salvar
+              </button>
             </div>
           </div>
         </div>

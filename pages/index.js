@@ -14,6 +14,7 @@ export default function Home() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [alias, setAlias] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchAlias, setSearchAlias] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -37,7 +38,8 @@ export default function Home() {
         },
         body: JSON.stringify({ 
           longUrl,
-          alias: alias.trim() || undefined 
+          alias: alias.trim() || undefined,
+          isPublic
         }),
       });
 
@@ -57,6 +59,7 @@ export default function Home() {
         setTimeout(() => {
           setLongUrl('');
           setAlias('');
+          setIsPublic(true);
         }, 1000);
       }
     } catch (err) {
@@ -331,6 +334,49 @@ export default function Home() {
                         </div>
                         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Use apenas letras, números, hífens e sublinhados.</p>
                       </div>
+                      
+                      {/* Campo de visibilidade - mostrado apenas para usuários logados */}
+                      {session?.user && (
+                        <div className="relative">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                            Visibilidade da URL
+                          </label>
+                          <div className="flex space-x-4">
+                            <div className="flex items-center">
+                              <input
+                                id="public"
+                                name="visibility"
+                                type="radio"
+                                checked={isPublic}
+                                onChange={() => setIsPublic(true)}
+                                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                              />
+                              <label htmlFor="public" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                Pública
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  Qualquer pessoa pode acessar e ver as estatísticas
+                                </p>
+                              </label>
+                            </div>
+                            <div className="flex items-center">
+                              <input
+                                id="private"
+                                name="visibility"
+                                type="radio"
+                                checked={!isPublic}
+                                onChange={() => setIsPublic(false)}
+                                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                              />
+                              <label htmlFor="private" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                Privada
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  Apenas você pode ver as estatísticas
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       
                       <div className="flex justify-end gap-4 pt-4">
                         <button 

@@ -1,6 +1,8 @@
 import dbConnect from '../../lib/mongodb';
 import Url from '../../models/Url';
 import { getFromCache, setInCache, removeFromCache } from '../../lib/redis';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]";
 
 // Armazena o último momento em que cada URL foi atualizada no banco de dados
 export const lastUpdateTimes = {};
@@ -19,6 +21,10 @@ export default async function handler(req, res) {
 
   try {
     const { code } = req.query;
+    
+    // Verifica a sessão do usuário
+    const session = await getServerSession(req, res, authOptions);
+    const userId = session?.user?.id;
     
     // ALTERAÇÃO: Verifica se stats é exatamente 'true' para não contabilizar cliques
     // Qualquer outro valor (incluindo 'false' ou undefined) vai contabilizar cliques
@@ -55,6 +61,13 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'URL não encontrada' });
       }
 
+      // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
+      if (!dbUrl.isPublic && dbUrl.userId && dbUrl.userId !== userId) {
+        // Se a URL é privada e o usuário não é o proprietário
+        console.log(`Acesso negado para URL privada: ${code}`);
+        return res.status(403).json({ error: 'Esta URL é privada' });
+      }
+
       // Converte o modelo do Mongoose para um objeto simples
       url = dbUrl.toObject();
       
@@ -73,6 +86,13 @@ export default async function handler(req, res) {
     } else {
       fromCache = true;
       console.log(`Cache hit para ${code}`);
+      
+      // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
+      if (url && !url.isPublic && url.userId && url.userId !== userId) {
+        // Se a URL é privada e o usuário não é o proprietário
+        console.log(`Acesso negado para URL privada (do cache): ${code}`);
+        return res.status(403).json({ error: 'Esta URL é privada' });
+      }
       
       // Se não tem cliques pendentes, inicializa
       if (pendingClicks[code] === undefined) {
