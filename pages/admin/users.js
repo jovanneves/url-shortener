@@ -146,9 +146,6 @@ export default function ManageUsers() {
     <header className="flex justify-between items-center mb-8">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Gerenciar Usuários</h1>
       <div className="flex items-center gap-3">
-        <Link href="/" className="px-4 py-2 border border-[#131a35] dark:border-[#131a35]/70 text-[#131a35] dark:text-[#131a35]/70 rounded-lg hover:bg-[#131a35]/5 dark:hover:bg-[#131a35]/20 transition-colors font-medium text-sm">
-          Nova URL
-        </Link>
         <UserProfile />
       </div>
     </header>
