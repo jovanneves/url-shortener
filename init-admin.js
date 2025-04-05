@@ -6,12 +6,12 @@ async function initializeAdmin() {
   
   try {
     // Conectar ao MongoDB
-    const uri = process.env.MONGODB_URI || 'mongodb://admin:password@mongodb:27017/urlshortner?authSource=admin';
+    const uri = process.env.MONGODB_URI || 'mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin';
     const client = new MongoClient(uri);
     await client.connect();
     console.log('Conectado ao MongoDB com sucesso');
 
-    const db = client.db('urlshortner');
+    const db = client.db('urlshortener');
     
     // Usar variáveis de ambiente ou valores padrão
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@sistema.com';

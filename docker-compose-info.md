@@ -21,17 +21,17 @@ O sistema está configurado com três serviços principais:
 - Porta: 80
 - Gerencia conexões externas e direciona para a aplicação
 
-## Domínio Personalizado (urlshortner)
+## Domínio Personalizado (urlshortener)
 
-A aplicação está configurada para usar o nome de domínio `urlshortner` em vez de `localhost`. Esta configuração envolve:
+A aplicação está configurada para usar o nome de domínio `urlshortener` em vez de `localhost`. Esta configuração envolve:
 
 ### Configuração do Nginx
-O arquivo `nginx.conf` está configurado para escutar requisições para o domínio `urlshortner`:
+O arquivo `nginx.conf` está configurado para escutar requisições para o domínio `urlshortener`:
 
 ```nginx
 server {
     listen 80;
-    server_name urlshortner;
+    server_name urlshortener;
     
     # Outras configurações...
 }
@@ -42,15 +42,15 @@ O Docker Compose configura as variáveis de ambiente para usar o domínio person
 
 ```yaml
 environment:
-  - NEXTAUTH_URL=http://urlshortner
-  - NEXT_PUBLIC_APP_URL=http://urlshortner
+  - NEXTAUTH_URL=http://urlshortener
+  - NEXT_PUBLIC_APP_URL=http://urlshortener
 ```
 
 ### Arquivo Hosts
 Para que a configuração funcione localmente, é necessário modificar o arquivo hosts do sistema operacional:
 
 ```
-127.0.0.1 urlshortner
+127.0.0.1 urlshortener
 ```
 
 ## Benefícios da Arquitetura

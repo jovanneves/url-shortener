@@ -1,4 +1,4 @@
-# URL Shortner
+# URL Shortener
 
 Aplicação de encurtamento de URLs com painel de controle para administradores e usuários.
 
@@ -13,7 +13,7 @@ A maneira mais simples de executar esta aplicação é usando Docker e docker-co
 docker-compose up -d
 ```
 
-A aplicação estará disponível em http://urlshortner
+A aplicação estará disponível em http://urlshortener
 
 ### Arquitetura de Containers
 
@@ -29,10 +29,10 @@ Cliente → Nginx (porta 80) → Aplicação Next.js (porta 3000) → MongoDB
 
 ### Configuração do Domínio Local
 
-Para acessar a aplicação usando o nome `urlshortner` ao invés de `localhost`, é necessário adicionar uma entrada no arquivo hosts do seu sistema:
+Para acessar a aplicação usando o nome `urlshortener` ao invés de `localhost`, é necessário adicionar uma entrada no arquivo hosts do seu sistema:
 
 ```
-127.0.0.1 urlshortner
+127.0.0.1 urlshortener
 ```
 
 #### Como editar o arquivo hosts:
@@ -53,7 +53,7 @@ sudo nano /etc/hosts
 
 Após fazer essa configuração, reinicie os containers (se necessário) e acesse a aplicação em seu navegador usando:
 ```
-http://urlshortner
+http://urlshortener
 ```
 
 ### Nginx como Proxy Reverso
@@ -143,7 +143,7 @@ npm run dev
 1. Clone o repositório
 ```bash
 git clone <seu-repositorio>
-cd url-shortner
+cd url-shortener
 ```
 
 2. Instale as dependências
@@ -192,7 +192,7 @@ As seguintes variáveis de ambiente podem ser configuradas:
 
 ```
 # MongoDB
-MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortner?authSource=admin
+MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
