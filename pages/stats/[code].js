@@ -114,6 +114,61 @@ function StatsContent() {
     }
   }, [clicksData, loading, error]);
 
+  // Adicionar componente de perfil do usuário para o cabeçalho
+  const UserProfile = () => {
+    if (!session) return null;
+    
+    return (
+      <div className="relative">
+        <button 
+          className="flex items-center space-x-2 focus:outline-none"
+          onClick={() => setShowUserMenu(!showUserMenu)}
+        >
+          <div className="w-8 h-8 rounded-full bg-[#131a35] flex items-center justify-center text-white font-medium text-sm">
+            {session.user.name ? session.user.name[0].toUpperCase() : "?"}
+          </div>
+          <span className="text-gray-800 dark:text-white hidden sm:inline">{session.user.name || session.user.email}</span>
+          <svg className="w-4 h-4 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {showUserMenu && (
+          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-dark-800 shadow-lg rounded-lg py-1 z-10 border border-gray-200 dark:border-dark-700">
+            <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-700">
+              <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{session.user.name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{session.user.email}</div>
+            </div>
+            <Link href="/auth/profile" className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+              Meu Perfil
+            </Link>
+            {session.user.isAdmin && (
+              <Link href="/admin/users" className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+                Gerenciar Usuários
+              </Link>
+            )}
+            <button 
+              onClick={() => signOut()}
+              className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-700"
+            >
+              Sair
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Componente do cabeçalho
+  const renderHeader = () => (
+    <header className="flex justify-between items-center mb-8">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
+      <div className="flex items-center gap-3">
+        <UserProfile />
+      </div>
+    </header>
+  );
+
   if (loading) return (
     <div className="min-h-screen flex flex-col">
       <div className="flex flex-1">
@@ -162,9 +217,7 @@ function StatsContent() {
         </div>
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            <header className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
-            </header>
+            {renderHeader()}
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-12 h-12 border-4 border-gray-200 dark:border-dark-700 border-t-[#131a35] dark:border-t-[#131a35]/80 rounded-full animate-spin mb-4"></div>
               <p className="text-gray-600 dark:text-gray-300">Carregando dados...</p>
@@ -239,9 +292,7 @@ function StatsContent() {
         </div>
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            <header className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
-            </header>
+            {renderHeader()}
             <div className="flex flex-col items-center justify-center p-16 text-center">
               <div className="text-4xl mb-4 text-red-500">❌</div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Erro</h2>
@@ -326,9 +377,7 @@ function StatsContent() {
 
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            <header className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
-            </header>
+            {renderHeader()}
 
             <div className="mb-6 flex items-center text-sm text-gray-600 dark:text-gray-400">
               <Link href="/" className="text-[#131a35] dark:text-[#131a35]/80 hover:underline">Início</Link>
