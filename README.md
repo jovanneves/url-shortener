@@ -13,7 +13,55 @@ A maneira mais simples de executar esta aplicação é usando Docker e docker-co
 docker-compose up -d
 ```
 
-A aplicação estará disponível em http://localhost:3000
+A aplicação estará disponível em http://urlshortner
+
+### Arquitetura de Containers
+
+O sistema está configurado para ser executado com os seguintes containers:
+- **MongoDB**: Banco de dados
+- **App**: Aplicação Next.js
+- **Nginx**: Servidor web que funciona como proxy reverso
+
+O fluxo de requisições é:
+```
+Cliente → Nginx (porta 80) → Aplicação Next.js (porta 3000) → MongoDB
+```
+
+### Configuração do Domínio Local
+
+Para acessar a aplicação usando o nome `urlshortner` ao invés de `localhost`, é necessário adicionar uma entrada no arquivo hosts do seu sistema:
+
+```
+127.0.0.1 urlshortner
+```
+
+#### Como editar o arquivo hosts:
+
+**Windows:**
+1. Abra o Bloco de Notas como administrador
+2. Abra o arquivo: `C:\Windows\System32\drivers\etc\hosts`
+3. Adicione a linha acima no final do arquivo
+4. Salve o arquivo
+
+**Linux/Mac:**
+```bash
+sudo nano /etc/hosts
+```
+1. Adicione a linha acima no final do arquivo
+2. Pressione CTRL+O e ENTER para salvar
+3. Pressione CTRL+X para sair
+
+Após fazer essa configuração, reinicie os containers (se necessário) e acesse a aplicação em seu navegador usando:
+```
+http://urlshortner
+```
+
+### Nginx como Proxy Reverso
+
+A aplicação utiliza o Nginx como proxy reverso, oferecendo as seguintes vantagens:
+- **Segurança**: O Nginx atua como uma camada adicional de proteção
+- **Performance**: Cache de conteúdo estático e compressão gzip
+- **Escalabilidade**: Facilita a expansão do sistema no futuro
 
 ## Acesso Inicial
 

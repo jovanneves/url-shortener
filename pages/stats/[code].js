@@ -71,17 +71,32 @@ function StatsContent() {
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
       
-      const day = date.toLocaleDateString('pt-BR', { weekday: 'short' });
-      const record = clickHistory.find(
-        r => new Date(r.date).setHours(0,0,0,0) === date.getTime()
-      );
+      // Usamos formato longo para maior clareza dos dias da semana
+      const diaDaSemana = date.toLocaleDateString('pt-BR', { weekday: 'long' });
+      // Formatamos também a data completa para debug (opcional - pode remover em produção)
+      const dataCompleta = date.toLocaleDateString('pt-BR');
+      
+      // Capitalize primeira letra e pegar apenas os primeiros 3 caracteres
+      const day = diaDaSemana.charAt(0).toUpperCase() + diaDaSemana.slice(1, 3);
+      
+      // Problema: a comparação de datas estava incorreta
+      // Convertemos ambas as datas para timestamps para comparação correta
+      const currentDateTimestamp = date.getTime();
+      const matchingRecord = clickHistory.find(record => {
+        const recordDate = new Date(record.date);
+        recordDate.setHours(0, 0, 0, 0);
+        return recordDate.getTime() === currentDateTimestamp;
+      });
       
       data.push({ 
-        day, 
-        clicks: record ? record.count : 0 
+        day,
+        fullDay: diaDaSemana,
+        date: dataCompleta, 
+        clicks: matchingRecord ? matchingRecord.count : 0 
       });
     }
     
+    console.log("Dados de cliques gerados:", data);
     setClicksData(data);
   };
 
@@ -424,6 +439,7 @@ function StatsContent() {
                         </div>
                       </div>
                       <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">{item.day}</span>
+                      <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">{item.date}</span>
                     </div>
                   ))}
                 </div>

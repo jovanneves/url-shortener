@@ -30,13 +30,20 @@ export default async function handler(req, res) {
       today.setHours(0, 0, 0, 0); // Normalizar para o início do dia
       
       // Verificar se já existe registro para hoje
-      const todayRecord = url.clickHistory.find(
-        record => new Date(record.date).setHours(0,0,0,0) === today.getTime()
-      );
+      const todayTimestamp = today.getTime();
       
-      if (todayRecord) {
-        todayRecord.count += 1;
+      // Encontrar o índice do registro de hoje (se existir)
+      const todayRecordIndex = url.clickHistory.findIndex(record => {
+        const recordDate = new Date(record.date);
+        recordDate.setHours(0, 0, 0, 0);
+        return recordDate.getTime() === todayTimestamp;
+      });
+      
+      if (todayRecordIndex !== -1) {
+        // Atualizar o registro existente
+        url.clickHistory[todayRecordIndex].count += 1;
       } else {
+        // Criar um novo registro para hoje
         url.clickHistory.push({
           date: today,
           count: 1
