@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// Configuração global para esperar pela conexão
+mongoose.set('bufferCommands', true);
+
 const UrlSchema = new mongoose.Schema({
   urlCode: {
     type: String,

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import ThemeToggle from '../components/ThemeToggle';
+import { useSession } from 'next-auth/react';
 
 export default function Home() {
   const [longUrl, setLongUrl] = useState('');
@@ -19,6 +20,7 @@ export default function Home() {
   const [searchError, setSearchError] = useState(false);
   const [errorTimeout, setErrorTimeout] = useState(null);
   const [shakeError, setShakeError] = useState(false);
+  const { data: session } = useSession();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -172,6 +174,15 @@ export default function Home() {
                 </svg>
                 Minhas URLs
               </Link>
+              
+              {session?.user?.isAdmin && (
+                <Link href="/admin/users" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  Admin
+                </Link>
+              )}
             </nav>
           </div>
         </div>

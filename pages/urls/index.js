@@ -2,8 +2,20 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import DashboardThemeToggle from '../../components/DashboardThemeToggle';
+import RequireAuth from '../../components/RequireAuth';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function UrlsPage() {
+  // Componente protegido com autenticação
+  return (
+    <RequireAuth>
+      <UrlsDashboard />
+    </RequireAuth>
+  );
+}
+
+function UrlsDashboard() {
+  const { data: session } = useSession();
   const [urls, setUrls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -16,6 +28,7 @@ export default function UrlsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [urlToEdit, setUrlToEdit] = useState(null);
   const [editAlias, setEditAlias] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
   
   // Estado de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -199,6 +212,67 @@ export default function UrlsPage() {
     }
   };
 
+  // Componente de perfil do usuário para o cabeçalho
+  const UserProfile = () => {
+    return (
+      <div className="relative">
+        <button 
+          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 focus:outline-none"
+          onClick={() => setShowUserMenu(!showUserMenu)}
+        >
+          <div className="w-8 h-8 rounded-full bg-[#131a35] dark:bg-[#131a35]/80 flex items-center justify-center text-white">
+            {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">
+            {session?.user?.name || 'Usuário'}
+          </span>
+          <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {showUserMenu && (
+          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-dark-800 rounded-md shadow-lg z-10 py-1 border border-gray-200 dark:border-dark-700">
+            <div className="px-4 py-2 border-b border-gray-200 dark:border-dark-700">
+              <p className="text-sm font-medium text-gray-900 dark:text-white">{session?.user?.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{session?.user?.email}</p>
+            </div>
+            
+            <Link href="/auth/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+              Meu Perfil
+            </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+                Gerenciar Usuários
+              </Link>
+            )}
+            
+            <button 
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-700"
+            >
+              Sair
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Substitua o cabeçalho existente por este
+  const renderHeader = () => (
+    <header className="flex justify-between items-center mb-8">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
+      <div className="flex items-center gap-3">
+        <Link href="/" className="px-4 py-2 border border-[#131a35] dark:border-[#131a35]/70 text-[#131a35] dark:text-[#131a35]/70 rounded-lg hover:bg-[#131a35]/5 dark:hover:bg-[#131a35]/20 transition-colors font-medium text-sm">
+          Nova URL
+        </Link>
+        <UserProfile />
+      </div>
+    </header>
+  );
+
   if (loading) return (
     <div className="min-h-screen flex">
       <div className="w-60 bg-[#131a35] text-white p-6 flex flex-col">
@@ -223,15 +297,22 @@ export default function UrlsPage() {
             </svg>
             Minhas URLs
           </Link>
+          
+          {session?.user?.isAdmin && (
+            <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Gerenciar Usuários
+            </Link>
+          )}
         </nav>
         <div className="mt-auto pt-8 flex justify-center">
           <DashboardThemeToggle />
         </div>
       </div>
       <div className="flex-1 bg-gray-50 dark:bg-dark-900 p-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
-        </header>
+        {renderHeader()}
         <div className="flex flex-col items-center justify-center py-16">
           <div className="w-12 h-12 border-4 border-gray-200 dark:border-dark-700 border-t-primary-400 dark:border-t-primary-400 rounded-full animate-spin mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">Carregando URLs...</p>
@@ -264,15 +345,22 @@ export default function UrlsPage() {
             </svg>
             Minhas URLs
           </Link>
+          
+          {session?.user?.isAdmin && (
+            <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Gerenciar Usuários
+            </Link>
+          )}
         </nav>
         <div className="mt-auto pt-8 flex justify-center">
           <DashboardThemeToggle />
         </div>
       </div>
       <div className="flex-1 bg-gray-50 dark:bg-dark-900 p-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
-        </header>
+        {renderHeader()}
         <div className="flex flex-col items-center justify-center p-16 text-center">
           <div className="text-4xl mb-4 text-red-500">❌</div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Erro</h2>
@@ -315,6 +403,15 @@ export default function UrlsPage() {
               </svg>
               Minhas URLs
             </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </Link>
+            )}
           </nav>
           <div className="mt-auto pt-8 flex justify-center">
             <DashboardThemeToggle />
@@ -323,14 +420,7 @@ export default function UrlsPage() {
 
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            <header className="flex justify-between items-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
-              <div className="flex gap-3">
-                <Link href="/" className="px-4 py-2 border border-[#131a35] dark:border-[#131a35]/70 text-[#131a35] dark:text-[#131a35]/70 rounded-lg hover:bg-[#131a35]/5 dark:hover:bg-[#131a35]/20 transition-colors font-medium text-sm">
-                  Nova URL
-                </Link>
-              </div>
-            </header>
+            {renderHeader()}
 
             <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
               <div className="relative w-full md:w-auto md:flex-1 max-w-md">

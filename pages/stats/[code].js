@@ -3,8 +3,20 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import DashboardThemeToggle from '../../components/DashboardThemeToggle';
+import RequireAuth from '../../components/RequireAuth';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function StatsPage() {
+  // Componente protegido com autenticação
+  return (
+    <RequireAuth>
+      <StatsContent />
+    </RequireAuth>
+  );
+}
+
+function StatsContent() {
+  const { data: session } = useSession();
   const router = useRouter();
   const { code } = router.query;
   const [urlData, setUrlData] = useState(null);
@@ -14,6 +26,7 @@ export default function StatsPage() {
   const [clicksData, setClicksData] = useState([]);
   // URL base para QR Code
   const [baseUrl, setBaseUrl] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
@@ -110,6 +123,15 @@ export default function StatsPage() {
               </svg>
               Minhas URLs
             </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </Link>
+            )}
           </nav>
           <div className="mt-auto pt-8 flex justify-center">
             <DashboardThemeToggle />
@@ -171,6 +193,15 @@ export default function StatsPage() {
               </svg>
               Minhas URLs
             </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </Link>
+            )}
           </nav>
           <div className="mt-auto pt-8 flex justify-center">
             <DashboardThemeToggle />
@@ -241,6 +272,15 @@ export default function StatsPage() {
               </svg>
               Minhas URLs
             </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </Link>
+            )}
           </nav>
           <div className="mt-auto pt-8 flex justify-center">
             <DashboardThemeToggle />

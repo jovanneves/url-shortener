@@ -3,10 +3,10 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
+  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
   "/[code]": "pages/[code].js",
   "/urls": "pages/urls.js",
-  "/api/shorten": "pages/api/shorten.js",
   "/api/urls": "pages/api/urls.js",
-  "/api/[code]": "pages/api/[code].js",
-  "/stats/[code]": "pages/stats/[code].js"
+  "/auth/profile": "pages/auth/profile.js",
+  "/api/user/change-password": "pages/api/user/change-password.js"
 }

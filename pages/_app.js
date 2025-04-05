@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/globals.css'
 import Head from 'next/head';
+import { SessionProvider } from "next-auth/react";
 
 // Estilo global para a animação de shake
 const globalStyles = `
@@ -15,15 +16,15 @@ const globalStyles = `
   }
 `;
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   return (
-    <>
+    <SessionProvider session={session}>
       <Head>
         <title>URL Shortener</title>
         <style>{globalStyles}</style>
       </Head>
       <Component {...pageProps} />
-    </>
+    </SessionProvider>
   )
 }
 
