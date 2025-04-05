@@ -283,15 +283,15 @@ export default function Home() {
                 
                 {/* Form */}
                 {showAddForm && (
-                  <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-dark-700 dark:to-dark-800 rounded-xl p-8 border border-blue-100 dark:border-dark-600 shadow-md">
+                  <div className="bg-white dark:bg-dark-800 rounded-xl p-8 border border-gray-200 dark:border-dark-600 shadow-md">
                     <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">Criar nova URL encurtada</h3>
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="relative">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="longUrl">
                           URL original
                         </label>
-                        <div className="flex">
-                          <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 sm:text-sm">
+                        <div className="flex shadow-sm rounded-md">
+                          <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 sm:text-sm">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -304,7 +304,7 @@ export default function Home() {
                             value={longUrl}
                             onChange={(e) => setLongUrl(e.target.value)}
                             required
-                            className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-[#131a35] focus:border-[#131a35] text-base border-gray-300 dark:border-dark-600 dark:bg-dark-800 dark:text-white"
+                            className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] text-base border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
                           />
                         </div>
                       </div>
@@ -313,8 +313,8 @@ export default function Home() {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="alias">
                           Apelido personalizado (opcional)
                         </label>
-                        <div className="flex">
-                          <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 text-sm">
+                        <div className="flex shadow-sm rounded-md">
+                          <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 text-sm">
                             {window.location.host}/
                           </span>
                           <input
@@ -323,7 +323,7 @@ export default function Home() {
                             placeholder="meu-link"
                             value={alias}
                             onChange={(e) => setAlias(e.target.value)}
-                            className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-[#131a35] focus:border-[#131a35] text-base border-gray-300 dark:border-dark-600 dark:bg-dark-800 dark:text-white"
+                            className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] text-base border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
                           />
                         </div>
                         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Use apenas letras, números, hífens e sublinhados.</p>
@@ -333,7 +333,7 @@ export default function Home() {
                         <button 
                           type="button" 
                           onClick={() => setShowAddForm(false)}
-                          className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-dark-700 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35]"
+                          className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-dark-700 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-dark-600 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35]"
                         >
                           Cancelar
                         </button>
