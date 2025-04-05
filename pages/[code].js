@@ -12,12 +12,18 @@ export default function RedirectPage() {
       if (!code) return;
 
       try {
+        console.log(`Redirecionando para URL com código: ${code}`);
+        const startTime = Date.now();
         const response = await fetch(`/api/${code}?stats=false`);
+        const endTime = Date.now();
+        console.log(`Tempo de resposta: ${endTime - startTime}ms`);
         
         if (response.ok) {
           const data = await response.json();
+          console.log(`Redirecionando para: ${data.longUrl}`);
           window.location.href = data.longUrl;
         } else {
+          console.error('Erro ao redirecionar, código não encontrado.');
           router.push('/');
         }
       } catch (error) {

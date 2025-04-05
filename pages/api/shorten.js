@@ -1,6 +1,7 @@
 import dbConnect from '../../lib/mongodb';
 import Url from '../../models/Url';
 import { nanoid } from 'nanoid';
+import { setInCache } from '../../lib/redis';
 
 export default async function handler(req, res) {
   // Verifica o método HTTP
@@ -59,9 +60,13 @@ export default async function handler(req, res) {
     });
 
     await newUrl.save();
+    
+    // Adiciona a nova URL ao cache
+    await setInCache(`url:${urlCode}`, newUrl.toObject(), 3600);
+    
     return res.status(201).json(newUrl);
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao encurtar URL:', error);
     return res.status(500).json({ error: 'Erro no servidor' });
   }
 } 

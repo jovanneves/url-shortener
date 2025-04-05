@@ -38,7 +38,8 @@ function StatsContent() {
       if (!code) return;
 
       try {
-        const response = await fetch(`/api/${code}?stats=true`);
+        // Usa o parâmetro stats=true para buscar dados do cache
+        const response = await fetch(`/api/${code}?stats=true&useCache=true`);
         
         if (response.ok) {
           const data = await response.json();

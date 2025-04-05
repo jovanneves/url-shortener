@@ -38,7 +38,7 @@ function UrlsDashboard() {
     async function fetchUrls() {
       try {
         setLoading(true);
-        const response = await fetch('/api/urls');
+        const response = await fetch('/api/urls?useCache=true');
         
         if (response.ok) {
           const data = await response.json();
@@ -192,16 +192,20 @@ function UrlsDashboard() {
       const data = await response.json();
       
       if (response.ok) {
-        // Atualiza o item no estado local
+        // Atualiza o item no estado local usando os dados retornados da API
+        // que incluem os valores mais recentes do cache
         setUrls(prevUrls => prevUrls.map(url => 
           url.urlCode === urlToEdit.urlCode 
-            ? { ...url, urlCode: editAlias, shortUrl: url.shortUrl.replace(url.urlCode, editAlias) } 
+            ? data.url 
             : url
         ));
         
         // Fecha o modal
         setShowEditModal(false);
         setUrlToEdit(null);
+        
+        // Atualiza a lista completa para garantir sincronização
+        refreshUrls();
       } else {
         console.error('Erro ao editar URL:', data.error);
         alert(`Erro ao editar: ${data.error}`);
@@ -209,6 +213,35 @@ function UrlsDashboard() {
     } catch (error) {
       console.error('Erro ao editar URL:', error);
       alert('Ocorreu um erro ao tentar editar a URL');
+    }
+  };
+
+  // Função para atualizar a lista de URLs
+  const refreshUrls = async () => {
+    try {
+      const response = await fetch('/api/urls?useCache=true&t=' + Date.now());
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUrls(data);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar URLs:', error);
+    }
+  };
+
+  // Função para atualizar uma URL específica a partir do banco de dados
+  const refreshUrlFromDatabase = async (code) => {
+    try {
+      // Força uma atualização do cache a partir do banco de dados
+      const response = await fetch(`/api/${code}?forceRefresh=true`);
+      
+      if (response.ok) {
+        // Atualiza a lista de URLs
+        refreshUrls();
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar URL do banco de dados:', error);
     }
   };
 
@@ -594,30 +627,39 @@ function UrlsDashboard() {
                             <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
                               {formatDate(url.createdAt)}
                             </td>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center justify-center space-x-2">
-                                <Link 
-                                  href={`/stats/${url.urlCode}`} 
-                                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400"
-                                  title="Ver estatísticas"
+                            <td className="py-3 px-4 text-right">
+                              <div className="flex items-center justify-end">
+                                <button 
+                                  onClick={() => refreshUrlFromDatabase(url.urlCode)} 
+                                  className="p-1.5 mr-1 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400"
+                                  title="Atualizar do banco de dados"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                   </svg>
-                                </Link>
+                                </button>
                                 <button 
-                                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                                  onClick={() => copyToClipboard(url.shortUrl, url.urlCode)} 
+                                  className="p-1.5 mr-1 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400"
+                                  title={copySuccess === url.urlCode ? 'Copiado!' : 'Copiar URL'}
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                  </svg>
+                                </button>
+                                <button 
+                                  onClick={() => prepareEdit(url)} 
+                                  className="p-1.5 mr-1 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400"
                                   title="Editar URL"
-                                  onClick={() => prepareEdit(url)}
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                   </svg>
                                 </button>
                                 <button 
-                                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                                  onClick={() => prepareDelete(url)} 
+                                  className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-dark-700 text-red-500"
                                   title="Excluir URL"
-                                  onClick={() => prepareDelete(url)}
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

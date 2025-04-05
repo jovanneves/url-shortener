@@ -83,13 +83,15 @@ export default function Home() {
     setShakeError(false);
     
     try {
-      const baseUrl = window.location.host;
-      const urlToCheck = `${baseUrl}/${searchTerm}`;
+      console.log('Buscando URL:', searchTerm);
       
-      const response = await fetch(`/api/check/${searchTerm}?stats=false`);
+      // Adiciona timestamp para evitar cache do navegador e forceRefresh=true para buscar direto do banco
+      const response = await fetch(`/api/check/${searchTerm}?stats=false&t=${Date.now()}&forceRefresh=true`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Resposta da busca:', data);
+        
         if (data.exists) {
           // URL existe, abre em nova aba
           window.open(data.longUrl, '_blank');
@@ -108,6 +110,7 @@ export default function Home() {
         }
       } else {
         // Erro na requisição, mostrar erro
+        console.error('Erro na busca:', await response.text());
         setSearchError(true);
         setShakeError(true);
         
