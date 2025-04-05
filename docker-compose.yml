@@ -11,6 +11,31 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
       - mongodb_data:/data/db
+    networks:
+      - url-shortner-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: url-shortner-app
+    ports:
+      - "3000:3000"
+    environment:
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortner?authSource=admin
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=your_nextauth_secret_key
+      - ADMIN_EMAIL=admin@sistema.com
+      - ADMIN_PASSWORD=@dm1n
+    depends_on:
+      - mongodb
+    networks:
+      - url-shortner-network
+    restart: unless-stopped
+
+networks:
+  url-shortner-network:
+    driver: bridge
 
 volumes:
   mongodb_data: 
