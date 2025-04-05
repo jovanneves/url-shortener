@@ -35,6 +35,11 @@ globalThis.__BUILD_MANIFEST = {
       "static/chunks/main.js",
       "static/chunks/pages/auth/login.js"
     ],
+    "/auth/register": [
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/auth/register.js"
+    ],
     "/urls": [
       "static/chunks/webpack.js",
       "static/chunks/main.js",

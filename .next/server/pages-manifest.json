@@ -2,9 +2,9 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
+  "/auth/login": "pages/auth/login.js",
   "/": "pages/index.js",
   "/[code]": "pages/[code].js",
-  "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
   "/urls": "pages/urls.js",
-  "/auth/login": "pages/auth/login.js"
+  "/auth/register": "pages/auth/register.js"
 }

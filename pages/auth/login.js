@@ -72,7 +72,7 @@ export default function Login() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link href="/" className="text-3xl font-bold text-[#131a35] dark:text-white">
-            URLshrink
+            URL Shortener
           </Link>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Entre para gerenciar suas URLs encurtadas
@@ -137,6 +137,14 @@ export default function Login() {
                 Registre-se
               </Link>
             </p>
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-dark-700">
+              <Link href="/" className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-[#131a35] dark:hover:text-white transition-colors">
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Voltar para Home
+              </Link>
+            </div>
           </div>
         </div>
       </div>
