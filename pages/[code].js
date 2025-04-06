@@ -36,56 +36,47 @@ export default function RedirectPage() {
   }, [code, router]);
 
   return (
-    <div className="container">
+    <div className="redirect-container">
       <Head>
         <title>Redirecionando...</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
 
-      <main>
-        <h1>Redirecionando...</h1>
-        <p>Você será redirecionado em breve. Se não for redirecionado automaticamente, <Link href="/" className="redirect-link">clique aqui</Link>.</p>
-      </main>
+      <div className="loader-container">
+        <div className="loader"></div>
+      </div>
 
       <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
+        .redirect-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: white;
           display: flex;
-          flex-direction: column;
-          justify-content: center;
           align-items: center;
-          background-color: #f5f5f5;
+          justify-content: center;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
+        .loader-container {
           text-align: center;
         }
 
-        h1 {
-          margin: 0 0 1rem;
-          line-height: 1.15;
-          font-size: 2.5rem;
-          color: #0070f3;
+        .loader {
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #131a35;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          margin: 0 auto 20px;
+          animation: spin 1s linear infinite;
         }
 
-        p {
-          line-height: 1.5;
-          font-size: 1.25rem;
-        }
-
-        .redirect-link {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .redirect-link:hover {
-          text-decoration: underline;
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
     </div>
