@@ -77,7 +77,9 @@ function UrlsDashboard() {
 
   // Função para copiar URL encurtada
   const copyToClipboard = (url, id) => {
-    navigator.clipboard.writeText(url);
+    // Construir a URL completa a partir do código
+    const fullUrl = `${window.location.protocol}//${window.location.host}/${url}`;
+    navigator.clipboard.writeText(fullUrl);
     setCopySuccess(id);
     
     setTimeout(() => {
@@ -139,7 +141,6 @@ function UrlsDashboard() {
   const filteredAndSortedUrls = urls
     .filter(url => 
       url.longUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      url.shortUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
       url.urlCode.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
@@ -746,21 +747,23 @@ function UrlsDashboard() {
                               <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <button 
-                                    onClick={() => copyToClipboard(url.shortUrl, url.urlCode)}
-                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center group"
-                                  >
-                                    <span className="truncate max-w-[180px] sm:max-w-xs">{url.shortUrl}</span>
-                                    <span className="ml-2 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                                      {copySuccess === url.urlCode ? (
-                                        <svg className="w-5 h-5 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  ) : (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                  )}
-                                    </span>
+                                  onClick={() => copyToClipboard(url.urlCode, url.urlCode)}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center group"
+                                >
+                                  <span className="truncate max-w-[180px] sm:max-w-xs">
+                                    {`${window.location.protocol}//${window.location.host}/${url.urlCode}`}
+                                  </span>
+                                  <span className="ml-2 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                                    {copySuccess === url.urlCode ? (
+                                      <svg className="w-5 h-5 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                    ) : (
+                                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                      </svg>
+                                    )}
+                                  </span>
                                 </button>
                               </div>
                             </td>
@@ -850,7 +853,7 @@ function UrlsDashboard() {
                                     </svg>
                                   </Link>
                                   <button 
-                                    onClick={() => copyToClipboard(url.shortUrl, url.urlCode)} 
+                                    onClick={() => copyToClipboard(url.urlCode, url.urlCode)} 
                                     className={`p-1.5 rounded-md ${
                                       copySuccess === url.urlCode 
                                         ? 'text-green-500 dark:text-green-400' 

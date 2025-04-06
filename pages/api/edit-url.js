@@ -81,14 +81,9 @@ export default async function handler(req, res) {
     }
     
     // Atualiza o código e a URL encurtada
-    const baseUrl = req.headers.host;
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const newShortUrl = `${protocol}://${baseUrl}/${newUrlCode}`;
-    
     // Dados atualizados
     const updatedData = {
       urlCode: newUrlCode,
-      shortUrl: newShortUrl,
       longUrl: longUrl || url.longUrl, // Permite atualizar a URL longa se fornecida
     };
     

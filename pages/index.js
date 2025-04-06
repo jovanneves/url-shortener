@@ -49,7 +49,7 @@ export default function Home() {
         throw new Error(data.error || 'Ocorreu um erro ao encurtar a URL');
       }
 
-      setShortUrl(data.shortUrl);
+      setShortUrl(data.urlCode);
       setUrlCode(data.urlCode);
       setSuccess(true);
       setShowAddForm(false);
@@ -143,7 +143,9 @@ export default function Home() {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shortUrl);
+    // Reconstruir a URL completa
+    const fullUrl = `${window.location.protocol}//${window.location.host}/${shortUrl}`;
+    navigator.clipboard.writeText(fullUrl);
     setCopySuccess(true);
     setShowTooltip(true);
     
@@ -444,7 +446,7 @@ export default function Home() {
                   <div className="flex items-center rounded-lg border border-gray-200 dark:border-dark-600 overflow-hidden">
                     <input 
                       type="text" 
-                      value={shortUrl} 
+                      value={`${window.location.protocol}//${window.location.host}/${shortUrl}`} 
                       readOnly 
                       className="flex-grow px-4 py-3 focus:outline-none text-gray-700 dark:text-gray-200 font-medium bg-white dark:bg-dark-700 text-base" 
                       onClick={(e) => e.target.select()} 
@@ -482,7 +484,7 @@ export default function Home() {
                       Ver estatísticas
                     </Link>
                     <a 
-                      href={shortUrl} 
+                      href={`${window.location.protocol}//${window.location.host}/${shortUrl}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="flex-1 px-4 py-2 bg-white dark:bg-dark-700 text-gray-800 dark:text-gray-200 rounded-md shadow-sm font-medium text-sm border border-gray-300 dark:border-dark-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"

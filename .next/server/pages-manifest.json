@@ -5,7 +5,9 @@
   "/": "pages/index.js",
   "/[code]": "pages/[code].js",
   "/api/auth/[...nextauth]": "pages/api/auth/[...nextauth].js",
+  "/auth/login": "pages/auth/login.js",
   "/urls": "pages/urls.js",
-  "/api/urls": "pages/api/urls.js",
-  "/api/shorten": "pages/api/shorten.js"
+  "/admin/users": "pages/admin/users.js",
+  "/api/admin/users": "pages/api/admin/users.js",
+  "/api/urls": "pages/api/urls.js"
 }

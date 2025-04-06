@@ -216,11 +216,13 @@ function StatsContent() {
           <div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">URL Encurtada</p>
             <div className="flex items-center justify-between">
-              <p className="text-gray-700 dark:text-gray-300">{urlData.shortUrl}</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                {`${window.location.protocol}//${window.location.host}/${urlData.urlCode}`}
+              </p>
               <button 
                 className="text-[#131a35] dark:text-[#4d5bcf] hover:text-[#1a234a] dark:hover:text-[#6d7cef] ml-2 p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
                 onClick={() => {
-                  navigator.clipboard.writeText(urlData.shortUrl);
+                  navigator.clipboard.writeText(`${window.location.protocol}//${window.location.host}/${urlData.urlCode}`);
                   alert('URL copiada para a área de transferência!');
                 }}
                 title="Copiar URL"
@@ -245,9 +247,9 @@ function StatsContent() {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">Compartilhar</h3>
         <div className="flex flex-col items-center">
           <div className="w-36 h-36 bg-gray-100 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 flex items-center justify-center mb-2 rounded-md overflow-hidden">
-            {urlData?.shortUrl && (
+            {urlData?.urlCode && (
               <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(urlData.shortUrl)}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.protocol}//${window.location.host}/${urlData.urlCode}`)}`}
                 alt="QR Code para URL encurtada"
                 className="w-full h-full object-cover"
                 loading="lazy"
@@ -258,8 +260,9 @@ function StatsContent() {
           <button
             className="mt-3 text-xs text-[#131a35] dark:text-[#4d5bcf] px-2 py-1 border border-[#131a35]/20 dark:border-[#4d5bcf]/40 rounded hover:bg-[#131a35]/5 dark:hover:bg-[#4d5bcf]/10"
             onClick={() => {
-              if (urlData?.shortUrl) {
-                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlData.shortUrl)}`;
+              if (urlData?.urlCode) {
+                const fullUrl = `${window.location.protocol}//${window.location.host}/${urlData.urlCode}`;
+                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
                 window.open(qrCodeUrl, '_blank');
               }
             }}
@@ -494,7 +497,7 @@ function StatsContent() {
               <button 
                 className="px-3 py-1.5 bg-[#131a35] hover:bg-[#1a234a] text-white text-sm font-medium rounded transition-colors shadow-sm"
                 onClick={() => {
-                  navigator.clipboard.writeText(urlData.shortUrl);
+                  navigator.clipboard.writeText(urlData.urlCode);
                   alert('URL copiada para a área de transferência!');
                 }}
               >

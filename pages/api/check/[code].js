@@ -135,7 +135,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ 
       exists: true, 
       longUrl: url.longUrl,
-      shortUrl: url.shortUrl,
+      urlCode: url.urlCode,
       clicks: url.clicks,
       isPublic: url.isPublic,
       userId: url.userId

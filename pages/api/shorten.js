@@ -69,15 +69,10 @@ export default async function handler(req, res) {
       urlCode = nanoid(6);
     }
     
-    const baseUrl = req.headers.host;
-    const protocol = req.headers['x-forwarded-proto'] || 'http';
-    const shortUrl = `${protocol}://${baseUrl}/${urlCode}`;
-
     // Prepara os dados da nova URL encurtada
     const urlData = {
       urlCode,
       longUrl,
-      shortUrl,
       clicks: 0,
       createdAt: new Date(),
       isPublic: Boolean(isPublic), // Converte para boolean
