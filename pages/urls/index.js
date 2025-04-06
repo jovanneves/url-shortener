@@ -45,8 +45,8 @@ function UrlsDashboard() {
   }, [activeFilter]);
 
   async function fetchUrls(filter = 'all') {
-    try {
-      setLoading(true);
+      try {
+        setLoading(true);
       let queryParams = 'useCache=true';
       
       if (filter === 'mine') {
@@ -60,20 +60,20 @@ function UrlsDashboard() {
       }
       
       const response = await fetch(`/api/urls?${queryParams}`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUrls(data);
-      } else {
-        setError('Erro ao carregar URLs');
+        
+        if (response.ok) {
+          const data = await response.json();
+          setUrls(data);
+        } else {
+          setError('Erro ao carregar URLs');
+        }
+      } catch (error) {
+        console.error('Erro ao buscar URLs:', error);
+        setError('Erro ao buscar URLs');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Erro ao buscar URLs:', error);
-      setError('Erro ao buscar URLs');
-    } finally {
-      setLoading(false);
     }
-  }
 
   // Função para copiar URL encurtada
   const copyToClipboard = (url, id) => {
@@ -548,74 +548,79 @@ function UrlsDashboard() {
           <div className="flex-1 p-8">
             {renderHeader()}
 
-            <div className="mb-6 flex flex-wrap gap-2">
-              <button
-                onClick={() => {
-                  setActiveFilter('all');
-                  setCurrentPage(1);
-                }}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeFilter === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
-                }`}
-              >
-                Todas as URLs
-              </button>
-              <button
-                onClick={() => {
-                  setActiveFilter('mine');
-                  setCurrentPage(1);
-                }}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeFilter === 'mine'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
-                }`}
-              >
-                Minhas URLs
-              </button>
-              <button
-                onClick={() => {
-                  setActiveFilter('public');
-                  setCurrentPage(1);
-                }}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  activeFilter === 'public'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
-                }`}
-              >
-                URLs Públicas
-              </button>
-            </div>
+            <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                {/* Busca de URLs */}
+                <div className="relative w-full md:w-64">
+                  <input
+                    type="text"
+                    placeholder="Buscar URLs..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full h-10 px-4 rounded-lg border border-gray-300 dark:border-dark-700 bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-500"
+                  />
+                  {searchTerm && (
+                    <button 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" 
+                      onClick={() => setSearchTerm('')}
+                      aria-label="Limpar busca"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
 
-            <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-              <div className="relative w-full md:w-auto md:flex-1 max-w-md">
-                <input
-                  type="text"
-                  placeholder="Buscar URLs..."
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="w-full h-10 px-4 rounded-lg border border-gray-300 dark:border-dark-700 bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-400 dark:focus:ring-primary-500"
-                />
-                {searchTerm && (
-                  <button 
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" 
-                    onClick={() => setSearchTerm('')}
-                    aria-label="Limpar busca"
+                {/* Botões de filtro */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      setActiveFilter('all');
+                      setCurrentPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeFilter === 'all'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
+                    }`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    Todas as URLs
                   </button>
-                )}
+                  <button
+                    onClick={() => {
+                      setActiveFilter('mine');
+                      setCurrentPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeFilter === 'mine'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
+                    }`}
+                  >
+                    Minhas URLs
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveFilter('public');
+                      setCurrentPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      activeFilter === 'public'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-700'
+                    }`}
+                  >
+                    URLs Públicas
+                  </button>
+                </div>
               </div>
-              
-              <div className="flex items-center">
+
+              {/* Controles de ordenação */}
+              <div className="flex items-center whitespace-nowrap">
                 <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">Ordenar por:</span>
                 <div className="flex gap-1">
                   <button 
@@ -739,8 +744,8 @@ function UrlsDashboard() {
                           currentItems.map((url) => (
                             <tr key={url.urlCode} className="bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-dark-700">
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <button
+                              <div className="flex items-center">
+                                <button 
                                     onClick={() => copyToClipboard(url.shortUrl, url.urlCode)}
                                     className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center group"
                                   >
@@ -748,17 +753,17 @@ function UrlsDashboard() {
                                     <span className="ml-2 text-gray-400 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                                       {copySuccess === url.urlCode ? (
                                         <svg className="w-5 h-5 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                        </svg>
-                                      ) : (
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  ) : (
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                        </svg>
-                                      )}
+                                    </svg>
+                                  )}
                                     </span>
-                                  </button>
-                                </div>
-                              </td>
+                                </button>
+                              </div>
+                            </td>
                               <td className="px-6 py-4">
                                 <a 
                                   href={url.longUrl} 
@@ -769,18 +774,18 @@ function UrlsDashboard() {
                                 >
                                   {url.longUrl}
                                 </a>
-                              </td>
+                            </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                                 <div className="flex items-center">
                                   <svg className="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 15l-2 5L9 9l11 4-5 2zm0 0L12 12" />
                                   </svg>
-                                  {url.clicks}
+                                {url.clicks}
                                 </div>
-                              </td>
+                            </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                {formatDate(url.createdAt)}
-                              </td>
+                              {formatDate(url.createdAt)}
+                            </td>
                               <td className="px-6 py-4 whitespace-nowrap text-center">
                                 <button 
                                   onClick={() => toggleUrlVisibility(url)}
@@ -823,16 +828,21 @@ function UrlsDashboard() {
                                 <div className="flex justify-end space-x-2">
                                   <button 
                                     onClick={() => refreshUrlFromDatabase(url.urlCode)} 
-                                    className="p-1.5 rounded-md hover:bg-white dark:hover:bg-dark-600 text-gray-500 dark:text-gray-400 transition-colors"
-                                    title="Atualizar do banco de dados"
+                                    className={`p-1.5 rounded-md ${url.isOwner 
+                                      ? 'hover:bg-white dark:hover:bg-dark-600 text-gray-500 dark:text-gray-400' 
+                                      : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} transition-colors`}
+                                    title={url.isOwner ? "Atualizar do banco de dados" : "Apenas o dono pode atualizar"}
+                                    disabled={!url.isOwner}
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                   </button>
-                                  <Link
-                                    href={`/stats/${url.urlCode}`}
-                                    className="p-1.5 rounded-md hover:bg-white dark:hover:bg-dark-600 text-blue-500 dark:text-blue-400 transition-colors"
+                                  <Link 
+                                    href={`/stats/${url.urlCode}`} 
+                                    className={`p-1.5 rounded-md ${
+                                      'hover:bg-white dark:hover:bg-dark-600 text-blue-500 dark:text-blue-400'
+                                    } transition-colors`}
                                     title="Ver estatísticas"
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -841,8 +851,15 @@ function UrlsDashboard() {
                                   </Link>
                                   <button 
                                     onClick={() => copyToClipboard(url.shortUrl, url.urlCode)} 
-                                    className={`p-1.5 rounded-md hover:bg-white dark:hover:bg-dark-600 transition-colors ${copySuccess === url.urlCode ? 'text-green-500 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}
-                                    title={copySuccess === url.urlCode ? 'Copiado!' : 'Copiar URL'}
+                                    className={`p-1.5 rounded-md ${
+                                      copySuccess === url.urlCode 
+                                        ? 'text-green-500 dark:text-green-400' 
+                                        : url.isOwner 
+                                          ? 'hover:bg-white dark:hover:bg-dark-600 text-gray-500 dark:text-gray-400' 
+                                          : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                                    } transition-colors`}
+                                    title={copySuccess === url.urlCode ? 'Copiado!' : url.isOwner ? 'Copiar URL' : 'Apenas o dono pode copiar'}
+                                    disabled={!url.isOwner && copySuccess !== url.urlCode}
                                   >
                                     {copySuccess === url.urlCode ? (
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -855,18 +872,24 @@ function UrlsDashboard() {
                                     )}
                                   </button>
                                   <button 
-                                    onClick={() => prepareEdit(url)} 
-                                    className="p-1.5 rounded-md hover:bg-white dark:hover:bg-dark-600 text-[#131a35] dark:text-[#8f9cc0] transition-colors"
-                                    title="Editar URL"
+                                    onClick={() => prepareEdit(url)}
+                                    className={`p-1.5 rounded-md ${url.isOwner 
+                                      ? 'hover:bg-white dark:hover:bg-dark-600 text-[#131a35] dark:text-[#8f9cc0]' 
+                                      : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} transition-colors`}
+                                    title={url.isOwner ? "Editar URL" : "Apenas o dono pode editar"}
+                                    disabled={!url.isOwner}
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                   </button>
                                   <button 
-                                    onClick={() => prepareDelete(url)} 
-                                    className="p-1.5 rounded-md hover:bg-white dark:hover:bg-dark-600 text-red-500 transition-colors"
-                                    title="Excluir URL"
+                                    onClick={() => prepareDelete(url)}
+                                    className={`p-1.5 rounded-md ${url.isOwner 
+                                      ? 'hover:bg-white dark:hover:bg-dark-600 text-red-500' 
+                                      : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} transition-colors`}
+                                    title={url.isOwner ? "Excluir URL" : "Apenas o dono pode excluir"}
+                                    disabled={!url.isOwner}
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1043,7 +1066,7 @@ function UrlsDashboard() {
               <div>
                 <label htmlFor="editAlias" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Apelido da URL
-                </label>
+                  </label>
                 <div className="flex rounded-md shadow-sm">
                   <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 text-sm">
                     {window.location.origin}/
@@ -1121,18 +1144,18 @@ function UrlsDashboard() {
               </div>
             </div>
             <div className="px-6 py-4 bg-gray-50 dark:bg-dark-750 flex justify-end gap-2 rounded-b-lg">
-              <button
-                onClick={() => setShowEditModal(false)}
+                <button 
+                  onClick={() => setShowEditModal(false)} 
                 className="px-4 py-2 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmEdit}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={confirmEdit} 
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Salvar
-              </button>
+                >
+                  Salvar
+                </button>
             </div>
           </div>
         </div>

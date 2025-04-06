@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -22,9 +22,7 @@ function StatsContent() {
   const [urlData, setUrlData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // Dados fictícios para o gráfico de cliques
   const [clicksData, setClicksData] = useState([]);
-  // URL base para QR Code
   const [baseUrl, setBaseUrl] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -33,36 +31,44 @@ function StatsContent() {
     setBaseUrl(window.location.origin);
   }, []);
 
-  useEffect(() => {
-    async function fetchUrlData() {
-      if (!code) return;
+  const fetchUrlData = useCallback(async () => {
+    if (!code) return;
 
-      try {
-        // Usa o parâmetro stats=true para buscar dados do cache
-        const response = await fetch(`/api/${code}?stats=true&useCache=true`);
+    try {
+      // Usa o parâmetro stats=true para buscar dados do cache
+      const response = await fetch(`/api/${code}?stats=true&useCache=true`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUrlData(data);
         
-        if (response.ok) {
-          const data = await response.json();
-          setUrlData(data);
-          
-          // Usar dados reais de cliques em vez de dados fictícios
-          generateRealClicksData(data.clickHistory || []);
-        } else {
-          setError('URL não encontrada');
+        // Usar dados reais de cliques
+        if (data.clickHistory) {
+          generateRealClicksData(data.clickHistory);
         }
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        setError('Erro ao buscar dados da URL');
-      } finally {
-        setLoading(false);
+      } else {
+        setError('URL não encontrada');
       }
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+      setError('Erro ao buscar dados da URL');
+    } finally {
+      setLoading(false);
     }
-
-    fetchUrlData();
   }, [code]);
 
+  useEffect(() => {
+    fetchUrlData();
+    
+    // Configurar atualização periódica a cada 30 segundos
+    const intervalId = setInterval(fetchUrlData, 30000);
+    
+    // Limpar intervalo ao desmontar o componente
+    return () => clearInterval(intervalId);
+  }, [fetchUrlData]);
+
   // Função para gerar dados reais de cliques por dia
-  const generateRealClicksData = (clickHistory) => {
+  const generateRealClicksData = useCallback((clickHistory) => {
     const days = 7; // Últimos 7 dias
     const now = new Date();
     const data = [];
@@ -74,14 +80,13 @@ function StatsContent() {
       
       // Usamos formato longo para maior clareza dos dias da semana
       const diaDaSemana = date.toLocaleDateString('pt-BR', { weekday: 'long' });
-      // Formatamos também a data completa para debug (opcional - pode remover em produção)
+      // Formatamos também a data completa
       const dataCompleta = date.toLocaleDateString('pt-BR');
       
       // Capitalize primeira letra e pegar apenas os primeiros 3 caracteres
       const day = diaDaSemana.charAt(0).toUpperCase() + diaDaSemana.slice(1, 3);
       
-      // Problema: a comparação de datas estava incorreta
-      // Convertemos ambas as datas para timestamps para comparação correta
+      // Timestamp para comparação correta
       const currentDateTimestamp = date.getTime();
       const matchingRecord = clickHistory.find(record => {
         const recordDate = new Date(record.date);
@@ -97,9 +102,8 @@ function StatsContent() {
       });
     }
     
-    console.log("Dados de cliques gerados:", data);
     setClicksData(data);
-  };
+  }, []);
 
   // Adicionar animação ao gráfico
   useEffect(() => {
@@ -114,8 +118,8 @@ function StatsContent() {
     }
   }, [clicksData, loading, error]);
 
-  // Adicionar componente de perfil do usuário para o cabeçalho
-  const UserProfile = () => {
+  // Memoizar componentes que não precisam ser recriados em cada renderização
+  const UserProfile = useMemo(() => {
     if (!session) return null;
     
     return (
@@ -157,17 +161,115 @@ function StatsContent() {
         )}
       </div>
     );
-  };
+  }, [session, showUserMenu]);
 
-  // Componente do cabeçalho
-  const renderHeader = () => (
+  // Memoizar o cabeçalho
+  const Header = useMemo(() => (
     <header className="flex justify-between items-center mb-8">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
       <div className="flex items-center gap-3">
-        <UserProfile />
+        {UserProfile}
       </div>
     </header>
-  );
+  ), [UserProfile]);
+
+  // Calcular estatísticas uma vez quando os dados mudam
+  const urlStats = useMemo(() => {
+    if (!urlData) return null;
+    
+    return {
+      activeTime: getActiveTime(urlData.createdAt),
+      dailyAverage: calculateDailyAverage(urlData.clicks, urlData.createdAt),
+      creationDate: new Date(urlData.createdAt).toLocaleDateString('pt-BR')
+    };
+  }, [urlData]);
+
+  // Memoizar componentes que dependem apenas de urlData
+  const UrlDetails = useMemo(() => {
+    if (!urlData) return null;
+    
+    return (
+      <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Detalhes da URL</h3>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Código</p>
+            <p className="text-[#131a35] dark:text-white font-medium">{urlData.urlCode}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">URL Original</p>
+            <div className="flex items-center justify-between">
+              <p className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">{urlData.longUrl}</p>
+              <a 
+                href={urlData.longUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-[#131a35] dark:text-[#4d5bcf] hover:text-[#1a234a] dark:hover:text-[#6d7cef] ml-2 p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
+                title="Abrir URL"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">URL Encurtada</p>
+            <div className="flex items-center justify-between">
+              <p className="text-gray-700 dark:text-gray-300">{urlData.shortUrl}</p>
+              <button 
+                className="text-[#131a35] dark:text-[#4d5bcf] hover:text-[#1a234a] dark:hover:text-[#6d7cef] ml-2 p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
+                onClick={() => {
+                  navigator.clipboard.writeText(urlData.shortUrl);
+                  alert('URL copiada para a área de transferência!');
+                }}
+                title="Copiar URL"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }, [urlData]);
+
+  // Memoizar o componente QR Code
+  const QRCodeComponent = useMemo(() => {
+    if (!urlData) return null;
+    
+    return (
+      <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">Compartilhar</h3>
+        <div className="flex flex-col items-center">
+          <div className="w-36 h-36 bg-gray-100 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 flex items-center justify-center mb-2 rounded-md overflow-hidden">
+            {urlData?.shortUrl && (
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(urlData.shortUrl)}`}
+                alt="QR Code para URL encurtada"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Escaneie para acessar</p>
+          <button
+            className="mt-3 text-xs text-[#131a35] dark:text-[#4d5bcf] px-2 py-1 border border-[#131a35]/20 dark:border-[#4d5bcf]/40 rounded hover:bg-[#131a35]/5 dark:hover:bg-[#4d5bcf]/10"
+            onClick={() => {
+              if (urlData?.shortUrl) {
+                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlData.shortUrl)}`;
+                window.open(qrCodeUrl, '_blank');
+              }
+            }}
+          >
+            Ampliar QR Code
+          </button>
+        </div>
+      </div>
+    );
+  }, [urlData]);
 
   if (loading) return (
     <div className="min-h-screen flex flex-col">
@@ -217,7 +319,7 @@ function StatsContent() {
         </div>
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            {renderHeader()}
+            {Header}
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-12 h-12 border-4 border-gray-200 dark:border-dark-700 border-t-[#131a35] dark:border-t-[#131a35]/80 rounded-full animate-spin mb-4"></div>
               <p className="text-gray-600 dark:text-gray-300">Carregando dados...</p>
@@ -292,7 +394,7 @@ function StatsContent() {
         </div>
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            {renderHeader()}
+            {Header}
             <div className="flex flex-col items-center justify-center p-16 text-center">
               <div className="text-4xl mb-4 text-red-500">❌</div>
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Erro</h2>
@@ -377,17 +479,17 @@ function StatsContent() {
 
         <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
           <div className="flex-1 p-8">
-            {renderHeader()}
+            {Header}
 
             <div className="mb-6 flex items-center text-sm text-gray-600 dark:text-gray-400">
-              <Link href="/" className="text-[#131a35] dark:text-[#131a35]/80 hover:underline">Início</Link>
+              <Link href="/" className="text-[#131a35] dark:text-[#4d5bcf] hover:underline">Início</Link>
               <span className="mx-2">/</span>
               <span className="font-medium">Estatísticas de URL</span>
             </div>
 
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-                Estatísticas da URL: <span className="text-[#131a35] dark:text-[#131a35]/80">{urlData.urlCode}</span>
+                Estatísticas da URL: <span className="text-[#131a35] dark:text-[#6d7cef]">{urlData.urlCode}</span>
               </h2>
               <button 
                 className="px-3 py-1.5 bg-[#131a35] hover:bg-[#1a234a] text-white text-sm font-medium rounded transition-colors shadow-sm"
@@ -402,7 +504,7 @@ function StatsContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700 flex items-center transform hover:translate-y-[-2px] transition-all">
-                <div className="text-3xl text-[#131a35] dark:text-[#131a35]/80 mr-4">👁️</div>
+                <div className="text-3xl text-[#131a35] dark:text-[#6d7cef] mr-4">👁️</div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total de Cliques</p>
                   <p className="text-2xl font-bold text-gray-800 dark:text-white">{urlData.clicks}</p>
@@ -410,26 +512,26 @@ function StatsContent() {
               </div>
               
               <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700 flex items-center transform hover:translate-y-[-2px] transition-all">
-                <div className="text-3xl text-[#131a35] dark:text-[#131a35]/80 mr-4">📅</div>
+                <div className="text-3xl text-[#131a35] dark:text-[#6d7cef] mr-4">📅</div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Data de Criação</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{new Date(urlData.createdAt).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{urlStats?.creationDate}</p>
                 </div>
               </div>
               
               <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700 flex items-center transform hover:translate-y-[-2px] transition-all">
-                <div className="text-3xl text-[#131a35] dark:text-[#131a35]/80 mr-4">⏱️</div>
+                <div className="text-3xl text-[#131a35] dark:text-[#6d7cef] mr-4">⏱️</div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Tempo Ativo</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{getActiveTime(urlData.createdAt)}</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{urlStats?.activeTime}</p>
                 </div>
               </div>
               
               <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700 flex items-center transform hover:translate-y-[-2px] transition-all">
-                <div className="text-3xl text-[#131a35] dark:text-[#131a35]/80 mr-4">📈</div>
+                <div className="text-3xl text-[#131a35] dark:text-[#6d7cef] mr-4">📈</div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Média Diária</p>
-                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{calculateDailyAverage(urlData.clicks, urlData.createdAt)}</p>
+                  <p className="text-2xl font-bold text-gray-800 dark:text-white">{urlStats?.dailyAverage}</p>
                 </div>
               </div>
             </div>
@@ -438,125 +540,103 @@ function StatsContent() {
               <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Cliques nos Últimos 7 Dias</h3>
-                  <div className="px-3 py-1 bg-[#131a35]/10 dark:bg-[#131a35]/20 text-[#131a35] dark:text-[#131a35]/80 text-sm font-medium rounded-full">
+                  <div className="px-3 py-1 bg-[#131a35]/10 dark:bg-[#131a35]/30 text-[#131a35] dark:text-white text-sm font-medium rounded-full">
                     {urlData.clicks} cliques totais
                   </div>
                 </div>
-                <div className="flex items-end justify-between h-48 px-4 pt-6 pb-8 relative">
-                  <div className="absolute left-0 right-0 bottom-10 border-b border-dashed border-gray-200 dark:border-dark-600"></div>
+                
+                <div className="relative h-60 w-full">
+                  {/* Área do gráfico com gradiente */}
+                  <div className="absolute inset-0 flex items-end px-4 pb-10">
+                    <svg className="absolute left-0 right-0 bottom-0 h-full w-full" style={{ zIndex: 1 }}>
+                      <defs>
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                          <stop offset="0%" stopColor="rgba(19, 26, 53, 0.2)" className="dark:stopColor-[rgba(77,91,207,0.3)]" />
+                          <stop offset="100%" stopColor="rgba(19, 26, 53, 0)" className="dark:stopColor-[rgba(77,91,207,0)]" />
+                        </linearGradient>
+                      </defs>
+                      <path 
+                        d={`M0,${100 - getBarHeight(clicksData[0]?.clicks || 0)} 
+                           ${clicksData.map((item, i) => {
+                              const x = (100 / (clicksData.length - 1) * i) + '%';
+                              const height = getBarHeight(item.clicks);
+                              return `L${x},${100 - height}`;
+                            }).join(' ')} 
+                            L100%,${100 - getBarHeight(clicksData[clicksData.length - 1]?.clicks || 0)} L100%,100% L0,100% Z`}
+                        fill="url(#areaGradient)"
+                        className="transition-all duration-700 ease-in-out"
+                      />
+                    </svg>
                   
-                  {/* Linha que conecta os pontos */}
-                  <svg className="absolute bottom-10 left-0 right-0 h-[calc(100%-40px)] w-full" style={{ pointerEvents: 'none' }}>
-                    <polyline 
-                      points={clicksData.map((item, index) => {
-                        const x = (100 / (clicksData.length - 1) * index) + '%';
-                        const height = getBarHeight(item.clicks);
-                        const y = (100 - height) + '%';
-                        return `${x},${y}`;
-                      }).join(' ')}
-                      fill="none"
-                      stroke="#131a35"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="dark:stroke-[#131a35]/80"
-                    />
-                    {clicksData.map((item, index) => {
-                      const x = (100 / (clicksData.length - 1) * index) + '%';
-                      const height = getBarHeight(item.clicks);
-                      const y = (100 - height) + '%';
-                      return (
-                        <circle 
-                          key={index}
-                          cx={x} 
-                          cy={y} 
-                          r="4" 
-                          fill="#131a35" 
-                          className="dark:fill-[#131a35]/80"
-                        />
-                      );
-                    })}
-                  </svg>
-                  
-                  {clicksData.map((item, index) => (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className="h-full flex items-end">
+                    {/* Grade horizontal */}
+                    <div className="absolute inset-0">
+                      {[0, 25, 50, 75, 100].map((position) => (
                         <div 
-                          className="chart-bar w-8 bg-[#131a35] dark:bg-[#131a35]/80 rounded-t-md relative flex justify-center cursor-pointer hover:bg-[#1a234a] dark:hover:bg-[#131a35] transition-all shadow-sm"
-                          style={{ height: '0%' }}
-                        >
-                          <span className="absolute -top-6 text-xs font-medium text-gray-700 dark:text-gray-300">{item.clicks}</span>
-                        </div>
-                      </div>
-                      <span className="mt-2 text-xs text-gray-500 dark:text-gray-400">{item.day}</span>
-                      <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">{item.date}</span>
+                          key={position} 
+                          className="absolute w-full border-b border-dashed border-gray-200 dark:border-dark-600"
+                          style={{ bottom: `${position}%`, height: '1px' }}
+                        />
+                      ))}
                     </div>
-                  ))}
+                    
+                    {/* Linha de conexão entre pontos */}
+                    <svg className="absolute inset-0 h-full w-full" style={{ zIndex: 2 }}>
+                      <polyline 
+                        points={clicksData.map((item, index) => {
+                          const x = (100 / (clicksData.length - 1) * index) + '%';
+                          const height = getBarHeight(item.clicks);
+                          const y = (100 - height) + '%';
+                          return `${x},${y}`;
+                        }).join(' ')}
+                        fill="none"
+                        stroke="#131a35"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="dark:stroke-[#6d7cef]"
+                      />
+                    </svg>
+                    
+                    <div className="grid grid-cols-7 gap-2 w-full h-full relative" style={{ zIndex: 3 }}>
+                      {clicksData.map((item, index) => (
+                        <div key={index} className="flex flex-col h-full">
+                          <div className="flex-1 flex items-end justify-center">
+                            <div 
+                              className="relative group"
+                            >
+                              <div 
+                                className="w-3 h-3 rounded-full bg-[#131a35] dark:bg-[#6d7cef] 
+                                       shadow-sm group-hover:bg-[#1a234a] dark:group-hover:bg-[#4d5bcf] 
+                                       group-hover:w-4 group-hover:h-4 transition-all duration-200"
+                              />
+                              
+                              {/* Tooltip no hover */}
+                              <div className="opacity-0 group-hover:opacity-100 absolute -top-12 left-1/2 transform -translate-x-1/2
+                                          bg-[#131a35] dark:bg-[#1a234a] text-white px-2 py-1 rounded text-xs whitespace-nowrap
+                                          transition-opacity duration-200 shadow-md z-10">
+                                <div className="font-medium">{item.clicks} cliques</div>
+                                <div className="text-xs text-gray-200">{item.fullDay}</div>
+                                <div className="text-[10px] opacity-80">{item.date}</div>
+                                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 
+                                            rotate-45 w-2 h-2 bg-[#131a35] dark:bg-[#1a234a]"></div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="h-8 flex flex-col items-center mt-3">
+                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{item.day}</span>
+                            <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">{item.date.split('/')[0]}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Detalhes da URL</h3>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Código</p>
-                    <p className="text-[#131a35] dark:text-[#131a35]/80 font-medium">{urlData.urlCode}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">URL Original</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-700 dark:text-gray-300 truncate max-w-[200px]">{urlData.longUrl}</p>
-                      <a 
-                        href={urlData.longUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="text-[#131a35] dark:text-[#131a35]/80 hover:text-[#1a234a] ml-2 p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
-                        title="Abrir URL"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                      </a>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">URL Encurtada</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-700 dark:text-gray-300">{urlData.shortUrl}</p>
-                      <button 
-                        className="text-[#131a35] dark:text-[#131a35]/80 hover:text-[#1a234a] ml-2 p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
-                        onClick={() => {
-                          navigator.clipboard.writeText(urlData.shortUrl);
-                          alert('URL copiada para a área de transferência!');
-                        }}
-                        title="Copiar URL"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">Compartilhar</h3>
-                <div className="flex flex-col items-center">
-                  <div className="w-36 h-36 bg-gray-100 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 flex items-center justify-center mb-2 rounded-md overflow-hidden">
-                    {urlData?.longUrl && (
-                      <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(urlData.longUrl)}`}
-                        alt="QR Code para URL original"
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Escaneie para acessar</p>
-                </div>
-              </div>
+              {UrlDetails}
+              {QRCodeComponent}
             </div>
           </div>
 
@@ -564,11 +644,11 @@ function StatsContent() {
           <footer className="border-t border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-900 py-8 px-8">
             <div className="max-w-6xl mx-auto">
               <div className="flex justify-center items-center">
-                <div className="flex items-center space-x-1 text-[#131a35] dark:text-[#131a35]/80">
+                <div className="flex items-center space-x-1 text-[#131a35] dark:text-[#6d7cef]">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
                   </svg>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     © 2025 URLShortener - Encurtador de URLs
                   </p>
                 </div>
@@ -607,7 +687,9 @@ function calculateDailyAverage(clicks, createdAt) {
 }
 
 function getBarHeight(clicks) {
-  // Para visualização do gráfico - escala os valores para ficar entre 10% e 90%
+  // Calcula a altura das barras de forma logarítmica para melhor visualização e valores mais suaves
   if (clicks === 0) return 5;
-  return Math.min(90, Math.max(10, clicks * 10));
+  // Usa escala logarítmica para evitar que barras com poucos cliques fiquem muito pequenas
+  // e barras com muitos cliques fiquem desproporcionalmente grandes
+  return Math.min(85, Math.max(10, 15 * Math.log2(clicks + 2) + 5));
 } 
