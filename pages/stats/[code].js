@@ -547,7 +547,19 @@ function StatsContent() {
                 
                 <div className="relative h-60 w-full">
                   {/* Área do gráfico com gradiente */}
-                  <div className="absolute inset-0 flex items-end px-4 pb-10">
+                  <div className="absolute inset-0 flex items-end px-4 pb-12">
+                    {/* Grade horizontal */}
+                    <div className="absolute inset-0">
+                      {[0, 25, 50, 75, 100].map((position) => (
+                        <div 
+                          key={position} 
+                          className="absolute w-full border-b border-dashed border-gray-200 dark:border-dark-600"
+                          style={{ bottom: `${position}%`, height: '1px' }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Fundo gradiente */}
                     <svg className="absolute left-0 right-0 bottom-0 h-full w-full" style={{ zIndex: 1 }}>
                       <defs>
                         <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -567,19 +579,8 @@ function StatsContent() {
                         className="transition-all duration-700 ease-in-out"
                       />
                     </svg>
-                  
-                    {/* Grade horizontal */}
-                    <div className="absolute inset-0">
-                      {[0, 25, 50, 75, 100].map((position) => (
-                        <div 
-                          key={position} 
-                          className="absolute w-full border-b border-dashed border-gray-200 dark:border-dark-600"
-                          style={{ bottom: `${position}%`, height: '1px' }}
-                        />
-                      ))}
-                    </div>
                     
-                    {/* Linha de conexão entre pontos */}
+                    {/* Linha de conexão entre pontos - mais grossa e evidente */}
                     <svg className="absolute inset-0 h-full w-full" style={{ zIndex: 2 }}>
                       <polyline 
                         points={clicksData.map((item, index) => {
@@ -590,7 +591,7 @@ function StatsContent() {
                         }).join(' ')}
                         fill="none"
                         stroke="#131a35"
-                        strokeWidth="2"
+                        strokeWidth="3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className="dark:stroke-[#6d7cef]"
@@ -600,31 +601,33 @@ function StatsContent() {
                     <div className="grid grid-cols-7 gap-2 w-full h-full relative" style={{ zIndex: 3 }}>
                       {clicksData.map((item, index) => (
                         <div key={index} className="flex flex-col h-full">
-                          <div className="flex-1 flex items-end justify-center">
-                            <div 
-                              className="relative group"
-                            >
-                              <div 
-                                className="w-3 h-3 rounded-full bg-[#131a35] dark:bg-[#6d7cef] 
-                                       shadow-sm group-hover:bg-[#1a234a] dark:group-hover:bg-[#4d5bcf] 
-                                       group-hover:w-4 group-hover:h-4 transition-all duration-200"
-                              />
+                          {/* Número de cliques acima do ponto */}
+                          <div className="flex-1 flex items-end justify-center pb-2">
+                            <div className="relative">
+                              {/* Valor do clique sempre visível acima do ponto */}
+                              <div className="absolute bottom-7 left-1/2 transform -translate-x-1/2 bg-white dark:bg-dark-800 px-2 py-1 rounded shadow-sm border border-gray-200 dark:border-dark-700 text-xs font-semibold text-gray-800 dark:text-white">
+                                {item.clicks}
+                              </div>
                               
-                              {/* Tooltip no hover */}
-                              <div className="opacity-0 group-hover:opacity-100 absolute -top-12 left-1/2 transform -translate-x-1/2
-                                          bg-[#131a35] dark:bg-[#1a234a] text-white px-2 py-1 rounded text-xs whitespace-nowrap
-                                          transition-opacity duration-200 shadow-md z-10">
-                                <div className="font-medium">{item.clicks} cliques</div>
+                              <div className="w-4 h-4 rounded-full bg-[#131a35] dark:bg-[#6d7cef] shadow-md relative">
+                                {/* Ponto maior e mais visível */}
+                                <div className="absolute inset-0 rounded-full bg-[#131a35] dark:bg-[#6d7cef] animate-ping opacity-75 duration-1000" style={{animationIterationCount: 1}}></div>
+                              </div>
+                              
+                              {/* Tooltip detalhado no hover */}
+                              <div className="opacity-0 hover:opacity-100 absolute -translate-x-1/2 left-1/2 -top-20 transform bg-[#131a35] dark:bg-[#1a234a] text-white px-3 py-2 rounded text-xs whitespace-nowrap transition-opacity duration-200 shadow-md z-10 pointer-events-none group-hover:pointer-events-auto w-32 text-center">
+                                <div className="font-bold text-sm">{item.clicks} cliques</div>
                                 <div className="text-xs text-gray-200">{item.fullDay}</div>
                                 <div className="text-[10px] opacity-80">{item.date}</div>
-                                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 
-                                            rotate-45 w-2 h-2 bg-[#131a35] dark:bg-[#1a234a]"></div>
+                                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 rotate-45 w-2 h-2 bg-[#131a35] dark:bg-[#1a234a]"></div>
                               </div>
                             </div>
                           </div>
-                          <div className="h-8 flex flex-col items-center mt-3">
+                          
+                          {/* Dia da semana e data abaixo */}
+                          <div className="h-10 flex flex-col items-center">
                             <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{item.day}</span>
-                            <span className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">{item.date.split('/')[0]}</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{item.date.split('/')[0]}</span>
                           </div>
                         </div>
                       ))}

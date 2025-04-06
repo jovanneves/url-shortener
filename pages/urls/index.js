@@ -550,8 +550,8 @@ function UrlsDashboard() {
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
               <div className="flex flex-col sm:flex-row gap-4 w-full">
-                {/* Busca de URLs */}
-                <div className="relative w-full md:w-64">
+                {/* Busca de URLs - versão melhorada e responsiva */}
+                <div className="relative w-full sm:w-auto sm:min-w-[240px] md:min-w-[300px] lg:min-w-[380px] xl:min-w-[420px] flex-grow-0 flex-shrink">
                   <input
                     type="text"
                     placeholder="Buscar URLs..."
