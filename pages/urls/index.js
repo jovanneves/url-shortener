@@ -41,29 +41,26 @@ function UrlsDashboard() {
   const [longUrlEdit, setLongUrlEdit] = useState('');
 
   useEffect(() => {
-    fetchUrls(activeFilter);
-  }, [activeFilter]);
-
-  async function fetchUrls(filter = 'all') {
+    async function fetchUrlsData(filter = 'all') {
       try {
         setLoading(true);
-      let queryParams = 'useCache=false'; // Alterado para false para garantir dados atualizados
-      
-      if (filter === 'mine') {
-        queryParams += '&onlyMine=true';
-      } else if (filter === 'public') {
-        queryParams += '&onlyPublic=true';
-      } else if (filter === 'all') {
-        // Não adiciona parâmetros especiais, pois o comportamento padrão da API
-        // já retorna apenas URLs públicas de outros usuários + todas as URLs do usuário atual
-      }
-      
-      if (session?.user?.isAdmin && filter === 'all') {
-        queryParams += '&all=true';
-      }
-      
-      const response = await fetch(`/api/urls?${queryParams}`);
+        let queryParams = 'useCache=false'; // Alterado para false para garantir dados atualizados
         
+        if (filter === 'mine') {
+          queryParams += '&onlyMine=true';
+        } else if (filter === 'public') {
+          queryParams += '&onlyPublic=true';
+        } else if (filter === 'all') {
+          // Não adiciona parâmetros especiais, pois o comportamento padrão da API
+          // já retorna apenas URLs públicas de outros usuários + todas as URLs do usuário atual
+        }
+        
+        if (session?.user?.isAdmin && filter === 'all') {
+          queryParams += '&all=true';
+        }
+        
+        const response = await fetch(`/api/urls?${queryParams}`);
+          
         if (response.ok) {
           const data = await response.json();
           setUrls(data);
@@ -77,6 +74,9 @@ function UrlsDashboard() {
         setLoading(false);
       }
     }
+    
+    fetchUrlsData(activeFilter);
+  }, [activeFilter, session?.user?.isAdmin]);
 
   // Função para copiar URL encurtada
   const copyToClipboard = (url, id) => {
@@ -282,7 +282,7 @@ function UrlsDashboard() {
         setUrlToEdit(null);
         
         // Atualiza a lista completa para garantir sincronização
-        fetchUrls(activeFilter);
+        refreshUrls();
       } else {
         console.error('Erro ao editar URL:', data.error);
         alert(`Erro ao editar: ${data.error}`);
@@ -717,7 +717,7 @@ function UrlsDashboard() {
                     <>
                       <div className="text-5xl mb-4">🔍</div>
                       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Nenhum resultado encontrado</h2>
-                      <p className="text-gray-600 dark:text-gray-400 mb-6">Sua busca por "{searchTerm}" não retornou resultados.</p>
+                      <p className="text-gray-600 dark:text-gray-400 mb-6">Sua busca por &quot;{searchTerm}&quot; não retornou resultados.</p>
                       <button 
                         className="px-4 py-2 bg-[#131a35] hover:bg-[#1a234a] dark:bg-[#131a35] dark:hover:bg-[#1a234a] text-white rounded-lg transition-colors font-medium"
                         onClick={() => setSearchTerm('')}

@@ -103,7 +103,7 @@ function StatsContent() {
     }
     
     setClicksData(data);
-  }, []);
+  }, [setClicksData]);
 
   // Adicionar animação ao gráfico
   useEffect(() => {

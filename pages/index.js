@@ -21,6 +21,7 @@ export default function Home() {
   const [searchError, setSearchError] = useState(false);
   const [errorTimeout, setErrorTimeout] = useState(null);
   const [shakeError, setShakeError] = useState(false);
+  const [baseUrl, setBaseUrl] = useState('');
   const { data: session } = useSession();
 
   const handleSubmit = async (e) => {
@@ -144,7 +145,7 @@ export default function Home() {
 
   const copyToClipboard = () => {
     // Reconstruir a URL completa
-    const fullUrl = `${window.location.protocol}//${window.location.host}/${shortUrl}`;
+    const fullUrl = `${baseUrl}/${shortUrl}`;
     
     // Usando a API moderna para copiar
     try {
@@ -190,6 +191,15 @@ export default function Home() {
       }, 2000);
     }
   };
+
+  useEffect(() => {
+    // Verificar se estamos no navegador antes de acessar window
+    if (typeof window !== 'undefined') {
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      setBaseUrl(`${protocol}//${host}`);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
@@ -360,7 +370,7 @@ export default function Home() {
                         </label>
                         <div className="flex shadow-sm rounded-md">
                           <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 text-sm">
-                            {window.location.host}/
+                            {baseUrl}/
                           </span>
                           <input
                             id="alias"
@@ -483,7 +493,7 @@ export default function Home() {
                   <div className="flex items-center rounded-lg border border-gray-200 dark:border-dark-600 overflow-hidden">
                     <input 
                       type="text" 
-                      value={`${window.location.protocol}//${window.location.host}/${shortUrl}`} 
+                      value={`${baseUrl}/${shortUrl}`} 
                       readOnly 
                       className="flex-grow px-4 py-3 focus:outline-none text-gray-700 dark:text-gray-200 font-medium bg-white dark:bg-dark-700 text-base" 
                       onClick={(e) => e.target.select()} 
@@ -521,7 +531,7 @@ export default function Home() {
                       Ver estatísticas
                     </Link>
                     <a 
-                      href={`${window.location.protocol}//${window.location.host}/${shortUrl}`} 
+                      href={`${baseUrl}/${shortUrl}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="flex-1 px-4 py-2 bg-white dark:bg-dark-700 text-gray-800 dark:text-gray-200 rounded-md shadow-sm font-medium text-sm border border-gray-300 dark:border-dark-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"

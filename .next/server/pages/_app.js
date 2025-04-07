@@ -1,90 +1,16 @@
-/*
- * ATTENTION: An "eval-source-map" devtool has been used.
- * This devtool is neither made for production nor for readable output files.
- * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
- * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
- * or disable the default devtool with "devtool: false".
- * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
- */
-(() => {
-var exports = {};
-exports.id = "pages/_app";
-exports.ids = ["pages/_app"];
-exports.modules = {
+(()=>{var e={};e.id=636,e.ids=[636],e.modules={2015:e=>{"use strict";e.exports=require("react")},2768:()=>{},4722:e=>{"use strict";e.exports=require("next-auth/react")},7016:(e,r,l)=>{"use strict";l.r(r),l.d(r,{default:()=>m});var t=l(8732),a=l(2015);l(2768);var s=l(7912),o=l.n(s),i=l(4722);function n({message:e,type:r="success",duration:l=3e3,onClose:s}){let[o,i]=(0,a.useState)(!0),n={success:{icon:(0,t.jsx)("svg",{className:"w-5 h-5",fill:"currentColor",viewBox:"0 0 20 20",xmlns:"http://www.w3.org/2000/svg",children:(0,t.jsx)("path",{fillRule:"evenodd",d:"M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z",clipRule:"evenodd"})}),bgColor:"bg-green-50 dark:bg-green-900/30",textColor:"text-green-800 dark:text-green-200",borderColor:"border-green-500"},error:{icon:(0,t.jsx)("svg",{className:"w-5 h-5",fill:"currentColor",viewBox:"0 0 20 20",xmlns:"http://www.w3.org/2000/svg",children:(0,t.jsx)("path",{fillRule:"evenodd",d:"M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z",clipRule:"evenodd"})}),bgColor:"bg-red-50 dark:bg-red-900/30",textColor:"text-red-800 dark:text-red-200",borderColor:"border-red-500"},warning:{icon:(0,t.jsx)("svg",{className:"w-5 h-5",fill:"currentColor",viewBox:"0 0 20 20",xmlns:"http://www.w3.org/2000/svg",children:(0,t.jsx)("path",{fillRule:"evenodd",d:"M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z",clipRule:"evenodd"})}),bgColor:"bg-yellow-50 dark:bg-yellow-900/30",textColor:"text-yellow-800 dark:text-yellow-200",borderColor:"border-yellow-500"},info:{icon:(0,t.jsx)("svg",{className:"w-5 h-5",fill:"currentColor",viewBox:"0 0 20 20",xmlns:"http://www.w3.org/2000/svg",children:(0,t.jsx)("path",{fillRule:"evenodd",d:"M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z",clipRule:"evenodd"})}),bgColor:"bg-blue-50 dark:bg-blue-900/30",textColor:"text-blue-800 dark:text-blue-200",borderColor:"border-blue-500"}}[r];return(0,t.jsxs)("div",{className:`
+        fixed bottom-4 right-4 z-50 max-w-md transform transition-all duration-300 
+        ${o?"translate-y-0 opacity-100":"translate-y-2 opacity-0"}
+        ${n.bgColor} ${n.textColor} px-4 py-3 rounded-lg shadow-lg
+        flex items-center border-l-4 ${n.borderColor}
+      `,role:"alert",children:[(0,t.jsx)("div",{className:"mr-3",children:n.icon}),(0,t.jsx)("div",{className:"flex-1 mr-2",children:e}),(0,t.jsx)("button",{onClick:()=>{i(!1),setTimeout(()=>s&&s(),300)},className:"text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none","aria-label":"Fechar",children:(0,t.jsx)("svg",{className:"w-4 h-4",fill:"currentColor",viewBox:"0 0 20 20",xmlns:"http://www.w3.org/2000/svg",children:(0,t.jsx)("path",{fillRule:"evenodd",d:"M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z",clipRule:"evenodd"})})})]})}let d=(0,a.createContext)(null),c=0;function u({children:e}){let[r,l]=(0,a.useState)([]),s=(0,a.useCallback)((e,r="success",t=3e3)=>{let a=c++;return l(l=>[...l,{id:a,message:e,type:r,duration:t}]),a},[]),o=(0,a.useCallback)(e=>{l(r=>r.filter(r=>r.id!==e))},[]),i=(0,a.useCallback)((e,r)=>s(e,"success",r),[s]),u=(0,a.useCallback)((e,r)=>s(e,"error",r),[s]),x=(0,a.useCallback)((e,r)=>s(e,"warning",r),[s]),m=(0,a.useCallback)((e,r)=>s(e,"info",r),[s]);return(0,t.jsxs)(d.Provider,{value:{addToast:s,removeToast:o,showSuccess:i,showError:u,showWarning:x,showInfo:m},children:[e,(0,t.jsx)("div",{className:"toast-container","aria-live":"polite","aria-atomic":"true",children:r.map((e,r)=>(0,t.jsx)(n,{message:e.message,type:e.type,duration:e.duration,onClose:()=>o(e.id)},e.id))})]})}let x=`
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
 
-/***/ "(pages-dir-node)/./pages/_app.js":
-/*!***********************!*\
-  !*** ./pages/_app.js ***!
-  \***********************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (__WEBPACK_DEFAULT_EXPORT__)\n/* harmony export */ });\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react/jsx-dev-runtime */ \"react/jsx-dev-runtime\");\n/* harmony import */ var react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);\n/* harmony import */ var _styles_globals_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../styles/globals.css */ \"(pages-dir-node)/./styles/globals.css\");\n/* harmony import */ var _styles_globals_css__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_styles_globals_css__WEBPACK_IMPORTED_MODULE_2__);\n/* harmony import */ var next_head__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! next/head */ \"next/head\");\n/* harmony import */ var next_head__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(next_head__WEBPACK_IMPORTED_MODULE_3__);\n/* harmony import */ var next_auth_react__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! next-auth/react */ \"next-auth/react\");\n/* harmony import */ var next_auth_react__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(next_auth_react__WEBPACK_IMPORTED_MODULE_4__);\n\n\n\n\n\n// Estilo global para a animação de shake\nconst globalStyles = `\n  @keyframes shake {\n    0%, 100% { transform: translateX(0); }\n    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }\n    20%, 40%, 60%, 80% { transform: translateX(5px); }\n  }\n\n  .animate-shake {\n    animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;\n  }\n`;\nfunction MyApp({ Component, pageProps: { session, ...pageProps } }) {\n    return /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(next_auth_react__WEBPACK_IMPORTED_MODULE_4__.SessionProvider, {\n        session: session,\n        children: [\n            /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)((next_head__WEBPACK_IMPORTED_MODULE_3___default()), {\n                children: [\n                    /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(\"title\", {\n                        children: \"URL Shortener\"\n                    }, void 0, false, {\n                        fileName: \"C:\\\\Users\\\\jovan\\\\source\\\\repos\\\\url-shortener\\\\pages\\\\_app.js\",\n                        lineNumber: 23,\n                        columnNumber: 9\n                    }, this),\n                    /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(\"style\", {\n                        children: globalStyles\n                    }, void 0, false, {\n                        fileName: \"C:\\\\Users\\\\jovan\\\\source\\\\repos\\\\url-shortener\\\\pages\\\\_app.js\",\n                        lineNumber: 24,\n                        columnNumber: 9\n                    }, this)\n                ]\n            }, void 0, true, {\n                fileName: \"C:\\\\Users\\\\jovan\\\\source\\\\repos\\\\url-shortener\\\\pages\\\\_app.js\",\n                lineNumber: 22,\n                columnNumber: 7\n            }, this),\n            /*#__PURE__*/ (0,react_jsx_dev_runtime__WEBPACK_IMPORTED_MODULE_0__.jsxDEV)(Component, {\n                ...pageProps\n            }, void 0, false, {\n                fileName: \"C:\\\\Users\\\\jovan\\\\source\\\\repos\\\\url-shortener\\\\pages\\\\_app.js\",\n                lineNumber: 26,\n                columnNumber: 7\n            }, this)\n        ]\n    }, void 0, true, {\n        fileName: \"C:\\\\Users\\\\jovan\\\\source\\\\repos\\\\url-shortener\\\\pages\\\\_app.js\",\n        lineNumber: 21,\n        columnNumber: 5\n    }, this);\n}\n/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (MyApp);\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHBhZ2VzLWRpci1ub2RlKS8uL3BhZ2VzL19hcHAuanMiLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7O0FBQTBCO0FBQ0k7QUFDRDtBQUNxQjtBQUVsRCx5Q0FBeUM7QUFDekMsTUFBTUcsZUFBZSxDQUFDOzs7Ozs7Ozs7O0FBVXRCLENBQUM7QUFFRCxTQUFTQyxNQUFNLEVBQUVDLFNBQVMsRUFBRUMsV0FBVyxFQUFFQyxPQUFPLEVBQUUsR0FBR0QsV0FBVyxFQUFFO0lBQ2hFLHFCQUNFLDhEQUFDSiw0REFBZUE7UUFBQ0ssU0FBU0E7OzBCQUN4Qiw4REFBQ04sa0RBQUlBOztrQ0FDSCw4REFBQ087a0NBQU07Ozs7OztrQ0FDUCw4REFBQ0M7a0NBQU9OOzs7Ozs7Ozs7Ozs7MEJBRVYsOERBQUNFO2dCQUFXLEdBQUdDLFNBQVM7Ozs7Ozs7Ozs7OztBQUc5QjtBQUVBLGlFQUFlRixLQUFLQSxFQUFBIiwic291cmNlcyI6WyJDOlxcVXNlcnNcXGpvdmFuXFxzb3VyY2VcXHJlcG9zXFx1cmwtc2hvcnRlbmVyXFxwYWdlc1xcX2FwcC5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QgZnJvbSAncmVhY3QnO1xyXG5pbXBvcnQgJy4uL3N0eWxlcy9nbG9iYWxzLmNzcydcclxuaW1wb3J0IEhlYWQgZnJvbSAnbmV4dC9oZWFkJztcclxuaW1wb3J0IHsgU2Vzc2lvblByb3ZpZGVyIH0gZnJvbSBcIm5leHQtYXV0aC9yZWFjdFwiO1xyXG5cclxuLy8gRXN0aWxvIGdsb2JhbCBwYXJhIGEgYW5pbWHDp8OjbyBkZSBzaGFrZVxyXG5jb25zdCBnbG9iYWxTdHlsZXMgPSBgXHJcbiAgQGtleWZyYW1lcyBzaGFrZSB7XHJcbiAgICAwJSwgMTAwJSB7IHRyYW5zZm9ybTogdHJhbnNsYXRlWCgwKTsgfVxyXG4gICAgMTAlLCAzMCUsIDUwJSwgNzAlLCA5MCUgeyB0cmFuc2Zvcm06IHRyYW5zbGF0ZVgoLTVweCk7IH1cclxuICAgIDIwJSwgNDAlLCA2MCUsIDgwJSB7IHRyYW5zZm9ybTogdHJhbnNsYXRlWCg1cHgpOyB9XHJcbiAgfVxyXG5cclxuICAuYW5pbWF0ZS1zaGFrZSB7XHJcbiAgICBhbmltYXRpb246IHNoYWtlIDAuOHMgY3ViaWMtYmV6aWVyKC4zNiwuMDcsLjE5LC45NykgYm90aDtcclxuICB9XHJcbmA7XHJcblxyXG5mdW5jdGlvbiBNeUFwcCh7IENvbXBvbmVudCwgcGFnZVByb3BzOiB7IHNlc3Npb24sIC4uLnBhZ2VQcm9wcyB9IH0pIHtcclxuICByZXR1cm4gKFxyXG4gICAgPFNlc3Npb25Qcm92aWRlciBzZXNzaW9uPXtzZXNzaW9ufT5cclxuICAgICAgPEhlYWQ+XHJcbiAgICAgICAgPHRpdGxlPlVSTCBTaG9ydGVuZXI8L3RpdGxlPlxyXG4gICAgICAgIDxzdHlsZT57Z2xvYmFsU3R5bGVzfTwvc3R5bGU+XHJcbiAgICAgIDwvSGVhZD5cclxuICAgICAgPENvbXBvbmVudCB7Li4ucGFnZVByb3BzfSAvPlxyXG4gICAgPC9TZXNzaW9uUHJvdmlkZXI+XHJcbiAgKVxyXG59XHJcblxyXG5leHBvcnQgZGVmYXVsdCBNeUFwcCAiXSwibmFtZXMiOlsiUmVhY3QiLCJIZWFkIiwiU2Vzc2lvblByb3ZpZGVyIiwiZ2xvYmFsU3R5bGVzIiwiTXlBcHAiLCJDb21wb25lbnQiLCJwYWdlUHJvcHMiLCJzZXNzaW9uIiwidGl0bGUiLCJzdHlsZSJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(pages-dir-node)/./pages/_app.js\n");
-
-/***/ }),
-
-/***/ "(pages-dir-node)/./styles/globals.css":
-/*!****************************!*\
-  !*** ./styles/globals.css ***!
-  \****************************/
-/***/ (() => {
-
-
-
-/***/ }),
-
-/***/ "next-auth/react":
-/*!**********************************!*\
-  !*** external "next-auth/react" ***!
-  \**********************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("next-auth/react");
-
-/***/ }),
-
-/***/ "next/head":
-/*!****************************!*\
-  !*** external "next/head" ***!
-  \****************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("next/head");
-
-/***/ }),
-
-/***/ "react":
-/*!************************!*\
-  !*** external "react" ***!
-  \************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("react");
-
-/***/ }),
-
-/***/ "react/jsx-dev-runtime":
-/*!****************************************!*\
-  !*** external "react/jsx-dev-runtime" ***!
-  \****************************************/
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("react/jsx-dev-runtime");
-
-/***/ })
-
-};
-;
-
-// load runtime
-var __webpack_require__ = require("../webpack-runtime.js");
-__webpack_require__.C(exports);
-var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
-var __webpack_exports__ = (__webpack_exec__("(pages-dir-node)/./pages/_app.js"));
-module.exports = __webpack_exports__;
-
-})();
+  .animate-shake {
+    animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+  }
+`,m=function({Component:e,pageProps:{session:r,...l}}){return(0,t.jsx)(i.SessionProvider,{session:r,children:(0,t.jsxs)(u,{children:[(0,t.jsxs)(o(),{children:[(0,t.jsx)("title",{children:"URL Shortener"}),(0,t.jsx)("meta",{name:"viewport",content:"width=device-width, initial-scale=1.0"}),(0,t.jsx)("meta",{name:"description",content:"Encurtador de URLs com estat\xedsticas e gerenciamento completo"}),(0,t.jsx)("style",{children:x})]}),(0,t.jsx)(e,{...l})]})})}},7912:e=>{"use strict";e.exports=require("next/head")},8732:e=>{"use strict";e.exports=require("react/jsx-runtime")}};var r=require("../webpack-runtime.js");r.C(e);var l=r(r.s=7016);module.exports=l})();

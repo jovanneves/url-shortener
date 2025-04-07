@@ -178,7 +178,22 @@ npm run dev
 ## Requisitos
 
 - Node.js 14.x ou superior
-- Docker e Docker Compose
+- Docker e Docker Compose (opcional para desenvolvimento)
+- MongoDB (obrigatório)
+- Redis (opcional para desenvolvimento)
+
+## Redis (Opcional para Desenvolvimento)
+
+Durante o desenvolvimento, o Redis é tratado como uma dependência opcional:
+- Se o Redis não estiver disponível, a aplicação continuará funcionando normalmente
+- Após 3 tentativas de conexão sem sucesso, o Redis será desativado automaticamente
+- O cache será desativado, mas todas as outras funcionalidades continuarão operando
+- Em produção, recomenda-se manter o Redis ativo para melhor performance
+
+Para desenvolvimento local sem Redis:
+1. A aplicação detectará automaticamente a ausência do Redis
+2. Continuará funcionando normalmente, apenas sem cache
+3. Não é necessário nenhuma configuração adicional
 
 ## Instalação
 

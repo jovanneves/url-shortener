@@ -2,6 +2,7 @@ import React from 'react';
 import '../styles/globals.css'
 import Head from 'next/head';
 import { SessionProvider } from "next-auth/react";
+import { ToastProvider } from '../src/contexts/ToastContext';
 
 // Estilo global para a animação de shake
 const globalStyles = `
@@ -19,11 +20,15 @@ const globalStyles = `
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <SessionProvider session={session}>
-      <Head>
-        <title>URL Shortener</title>
-        <style>{globalStyles}</style>
-      </Head>
-      <Component {...pageProps} />
+      <ToastProvider>
+        <Head>
+          <title>URL Shortener</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <meta name="description" content="Encurtador de URLs com estatísticas e gerenciamento completo" />
+          <style>{globalStyles}</style>
+        </Head>
+        <Component {...pageProps} />
+      </ToastProvider>
     </SessionProvider>
   )
 }
