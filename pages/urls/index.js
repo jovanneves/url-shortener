@@ -47,12 +47,15 @@ function UrlsDashboard() {
   async function fetchUrls(filter = 'all') {
       try {
         setLoading(true);
-      let queryParams = 'useCache=true';
+      let queryParams = 'useCache=false'; // Alterado para false para garantir dados atualizados
       
       if (filter === 'mine') {
         queryParams += '&onlyMine=true';
       } else if (filter === 'public') {
         queryParams += '&onlyPublic=true';
+      } else if (filter === 'all') {
+        // Não adiciona parâmetros especiais, pois o comportamento padrão da API
+        // já retorna apenas URLs públicas de outros usuários + todas as URLs do usuário atual
       }
       
       if (session?.user?.isAdmin && filter === 'all') {
@@ -175,8 +178,11 @@ function UrlsDashboard() {
   // Filtragem e ordenação das URLs
   const filteredAndSortedUrls = urls
     .filter(url => 
-      url.longUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      url.urlCode.toLowerCase().includes(searchTerm.toLowerCase())
+      // Filtra por termo de busca
+      (url.longUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      url.urlCode.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      // Garante que URLs privadas de outros usuários nunca sejam exibidas
+      (url.isOwner || url.isPublic)
     )
     .sort((a, b) => {
       let comparison = 0;
@@ -259,12 +265,17 @@ function UrlsDashboard() {
       const data = await response.json();
       
       if (response.ok) {
-        // Atualiza o item no estado local usando os dados retornados da API
-        setUrls(prevUrls => prevUrls.map(url => 
-          url.urlCode === urlToEdit.urlCode 
-            ? data.url 
-            : url
-        ));
+        // Se estiver na aba de URLs públicas e a URL está sendo alterada para privada, remove-a da lista
+        if (activeFilter === 'public' && !editIsPublic) {
+          setUrls(prevUrls => prevUrls.filter(url => url.urlCode !== urlToEdit.urlCode));
+        } else {
+          // Caso contrário, atualiza o item no estado local usando os dados retornados da API
+          setUrls(prevUrls => prevUrls.map(url => 
+            url.urlCode === urlToEdit.urlCode 
+              ? data.url 
+              : url
+          ));
+        }
         
         // Fecha o modal
         setShowEditModal(false);
@@ -336,12 +347,18 @@ function UrlsDashboard() {
       const data = await response.json();
       
       if (response.ok) {
-        // Atualiza o item no estado local
-        setUrls(prevUrls => prevUrls.map(item => 
-          item.urlCode === url.urlCode 
-            ? { ...item, isPublic: newIsPublic } 
-            : item
-        ));
+        // Atualiza o item no estado local, dependendo do filtro ativo
+        if (activeFilter === 'public' && !newIsPublic) {
+          // Se estiver na aba de URLs públicas e tornou a URL privada, remove-a da lista
+          setUrls(prevUrls => prevUrls.filter(item => item.urlCode !== url.urlCode));
+        } else {
+          // Caso contrário, apenas atualiza o estado da URL
+          setUrls(prevUrls => prevUrls.map(item => 
+            item.urlCode === url.urlCode 
+              ? { ...item, isPublic: newIsPublic } 
+              : item
+          ));
+        }
       } else {
         console.error('Erro ao atualizar visibilidade:', data.error);
         alert(`Erro ao atualizar visibilidade: ${data.error}`);
