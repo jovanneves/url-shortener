@@ -145,13 +145,50 @@ export default function Home() {
   const copyToClipboard = () => {
     // Reconstruir a URL completa
     const fullUrl = `${window.location.protocol}//${window.location.host}/${shortUrl}`;
-    navigator.clipboard.writeText(fullUrl);
-    setCopySuccess(true);
-    setShowTooltip(true);
     
-    setTimeout(() => {
-      setShowTooltip(false);
-    }, 2000);
+    // Usando a API moderna para copiar
+    try {
+      navigator.clipboard.writeText(fullUrl)
+        .then(() => {
+          setCopySuccess(true);
+          setShowTooltip(true);
+          
+          setTimeout(() => {
+            setShowTooltip(false);
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Erro ao copiar: ', err);
+          // Fallback em caso de falha
+          const textArea = document.createElement('textarea');
+          textArea.value = fullUrl;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          setCopySuccess(true);
+          setShowTooltip(true);
+          
+          setTimeout(() => {
+            setShowTooltip(false);
+          }, 2000);
+        });
+    } catch (err) {
+      console.error('Erro ao copiar: ', err);
+      // Fallback em navegadores antigos
+      const textArea = document.createElement('textarea');
+      textArea.value = fullUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(true);
+      setShowTooltip(true);
+      
+      setTimeout(() => {
+        setShowTooltip(false);
+      }, 2000);
+    }
   };
 
   return (

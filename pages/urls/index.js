@@ -79,12 +79,47 @@ function UrlsDashboard() {
   const copyToClipboard = (url, id) => {
     // Construir a URL completa a partir do código
     const fullUrl = `${window.location.protocol}//${window.location.host}/${url}`;
-    navigator.clipboard.writeText(fullUrl);
-    setCopySuccess(id);
     
-    setTimeout(() => {
-      setCopySuccess(null);
-    }, 2000);
+    // Usando a API moderna para copiar
+    try {
+      navigator.clipboard.writeText(fullUrl)
+        .then(() => {
+          setCopySuccess(id);
+          
+          setTimeout(() => {
+            setCopySuccess(null);
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Erro ao copiar: ', err);
+          // Fallback em caso de falha
+          const textArea = document.createElement('textarea');
+          textArea.value = fullUrl;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          setCopySuccess(id);
+          
+          setTimeout(() => {
+            setCopySuccess(null);
+          }, 2000);
+        });
+    } catch (err) {
+      console.error('Erro ao copiar: ', err);
+      // Fallback em navegadores antigos
+      const textArea = document.createElement('textarea');
+      textArea.value = fullUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopySuccess(id);
+      
+      setTimeout(() => {
+        setCopySuccess(null);
+      }, 2000);
+    }
   };
 
   // Função para preparar exclusão
@@ -1052,64 +1087,46 @@ function UrlsDashboard() {
 
       {/* Modal de edição */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-dark-800 rounded-lg shadow-xl w-full max-w-md">
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-dark-700">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Editar URL</h3>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-white dark:bg-dark-800 rounded-xl p-6 max-w-lg w-full shadow-xl transform transition-all">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">Editar URL</h3>
+            <div className="space-y-6">
               <div>
-                <label htmlFor="editAlias" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Apelido da URL
-                  </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL Original</label>
                 <div className="flex rounded-md shadow-sm">
-                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-700 text-gray-500 dark:text-gray-400 text-sm">
-                    {window.location.origin}/
+                  <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 sm:text-sm">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
                   </span>
                   <input
-                    id="editAlias"
+                    type="url"
+                    value={longUrlEdit}
+                    onChange={(e) => setLongUrlEdit(e.target.value)}
+                    required
+                    className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Apelido Personalizado</label>
+                <div className="flex rounded-md shadow-sm">
+                  <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 text-sm">
+                    {window.location.host}/
+                  </span>
+                  <input
                     type="text"
                     value={editAlias}
                     onChange={(e) => setEditAlias(e.target.value)}
-                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-gray-900 dark:text-white"
+                    required
+                    className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
                   />
                 </div>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Use apenas letras, números, hífens e sublinhados.
-                </p>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Use apenas letras, números, hífens e sublinhados.</p>
               </div>
-
-              {/* Campo de URL original */}
-              <div className="mt-4">
-                <label htmlFor="longUrlEdit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  URL Original
-                </label>
-                <input
-                  id="longUrlEdit"
-                  type="url"
-                  value={longUrlEdit}
-                  onChange={(e) => setLongUrlEdit(e.target.value)}
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-800 text-gray-900 dark:text-white"
-                  placeholder="https://exemplo.com/minha-pagina"
-                />
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  URL completa para onde o link encurtado irá redirecionar.
-                </p>
-              </div>
-              
-              {/* Campo de visibilidade */}
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  Visibilidade
-                </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Visibilidade da URL</label>
                 <div className="flex space-x-4">
                   <div className="flex items-center">
                     <input
@@ -1123,7 +1140,7 @@ function UrlsDashboard() {
                     <label htmlFor="editPublic" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                       Pública
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Qualquer pessoa pode acessar
+                        Qualquer pessoa pode acessar e ver as estatísticas
                       </p>
                     </label>
                   </div>
@@ -1139,26 +1156,65 @@ function UrlsDashboard() {
                     <label htmlFor="editPrivate" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
                       Privada
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Apenas você pode acessar
+                        Apenas você pode ver as estatísticas
                       </p>
                     </label>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="px-6 py-4 bg-gray-50 dark:bg-dark-750 flex justify-end gap-2 rounded-b-lg">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL Encurtada</label>
+                <div className="flex items-center rounded-md border border-gray-300 dark:border-gray-600 overflow-hidden">
+                  <input 
+                    type="text" 
+                    value={`${window.location.protocol}//${window.location.host}/${editAlias}`} 
+                    readOnly 
+                    className="flex-grow px-4 py-2 focus:outline-none text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-dark-700 text-sm" 
+                    onClick={(e) => e.target.select()} 
+                  />
+                  <button 
+                    onClick={() => copyToClipboard(editAlias, 'edit-modal')}
+                    className={`px-4 py-2 flex items-center justify-center transition-colors ${
+                      copySuccess === 'edit-modal' 
+                        ? 'bg-green-500 text-white dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700' 
+                        : 'bg-gray-100 dark:bg-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-500'
+                    }`}
+                  >
+                    {copySuccess === 'edit-modal' ? (
+                      <span className="flex items-center">
+                        <svg className="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Copiado!
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <svg className="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Copiar
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 pt-4">
                 <button 
-                  onClick={() => setShowEditModal(false)} 
-                className="px-4 py-2 bg-white dark:bg-dark-700 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setUrlToEdit(null);
+                  }}
+                  className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-dark-700 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-dark-600 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35]"
                 >
                   Cancelar
                 </button>
                 <button 
-                  onClick={confirmEdit} 
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={confirmEdit}
+                  className="px-6 py-3 bg-[#131a35] hover:bg-[#1a234a] text-white rounded-md shadow-sm font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35]"
                 >
-                  Salvar
+                  Salvar alterações
                 </button>
+              </div>
             </div>
           </div>
         </div>
