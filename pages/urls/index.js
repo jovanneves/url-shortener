@@ -893,6 +893,7 @@ function UrlsDashboard() {
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                   </button>
+                                  
                                   <Link 
                                     href={`/stats/${url.urlCode}`} 
                                     className={`p-1.5 rounded-md ${
@@ -904,28 +905,7 @@ function UrlsDashboard() {
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
                                   </Link>
-                                  <button 
-                                    onClick={() => copyToClipboard(url.urlCode, url.urlCode)} 
-                                    className={`p-1.5 rounded-md ${
-                                      copySuccess === url.urlCode 
-                                        ? 'text-green-500 dark:text-green-400' 
-                                        : url.isOwner 
-                                          ? 'hover:bg-white dark:hover:bg-dark-600 text-gray-500 dark:text-gray-400' 
-                                          : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                                    } transition-colors`}
-                                    title={copySuccess === url.urlCode ? 'Copiado!' : url.isOwner ? 'Copiar URL' : 'Apenas o dono pode copiar'}
-                                    disabled={!url.isOwner && copySuccess !== url.urlCode}
-                                  >
-                                    {copySuccess === url.urlCode ? (
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                      </svg>
-                                    ) : (
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                      </svg>
-                                    )}
-                                  </button>
+                                  
                                   <button 
                                     onClick={() => prepareEdit(url)}
                                     className={`p-1.5 rounded-md ${url.isOwner 
@@ -938,6 +918,7 @@ function UrlsDashboard() {
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                   </button>
+                                  
                                   <button 
                                     onClick={() => prepareDelete(url)}
                                     className={`p-1.5 rounded-md ${url.isOwner 
