@@ -222,7 +222,9 @@ function StatsContent() {
               <button 
                 className="text-[#131a35] dark:text-[#4d5bcf] hover:text-[#1a234a] dark:hover:text-[#6d7cef] ml-2 p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
                 onClick={() => {
-                  navigator.clipboard.writeText(`${window.location.protocol}//${window.location.host}/${urlData.urlCode}`);
+                  // Reconstruir a URL completa a partir do código
+                  const fullUrl = `${window.location.protocol}//${window.location.host}/${urlData.urlCode}`;
+                  navigator.clipboard.writeText(fullUrl);
                   alert('URL copiada para a área de transferência!');
                 }}
                 title="Copiar URL"
@@ -247,22 +249,21 @@ function StatsContent() {
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-6">Compartilhar</h3>
         <div className="flex flex-col items-center">
           <div className="w-36 h-36 bg-gray-100 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 flex items-center justify-center mb-2 rounded-md overflow-hidden">
-            {urlData?.urlCode && (
+            {urlData?.longUrl && (
               <img 
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.protocol}//${window.location.host}/${urlData.urlCode}`)}`}
-                alt="QR Code para URL encurtada"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(urlData.longUrl)}`}
+                alt="QR Code para URL original"
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Escaneie para acessar</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Escaneie para acessar a URL original</p>
           <button
             className="mt-3 text-xs text-[#131a35] dark:text-[#4d5bcf] px-2 py-1 border border-[#131a35]/20 dark:border-[#4d5bcf]/40 rounded hover:bg-[#131a35]/5 dark:hover:bg-[#4d5bcf]/10"
             onClick={() => {
-              if (urlData?.urlCode) {
-                const fullUrl = `${window.location.protocol}//${window.location.host}/${urlData.urlCode}`;
-                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(fullUrl)}`;
+              if (urlData?.longUrl) {
+                const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(urlData.longUrl)}`;
                 window.open(qrCodeUrl, '_blank');
               }
             }}
@@ -497,7 +498,9 @@ function StatsContent() {
               <button 
                 className="px-3 py-1.5 bg-[#131a35] hover:bg-[#1a234a] text-white text-sm font-medium rounded transition-colors shadow-sm"
                 onClick={() => {
-                  navigator.clipboard.writeText(urlData.urlCode);
+                  // Reconstruir a URL completa a partir do código
+                  const fullUrl = `${window.location.protocol}//${window.location.host}/${urlData.urlCode}`;
+                  navigator.clipboard.writeText(fullUrl);
                   alert('URL copiada para a área de transferência!');
                 }}
               >
