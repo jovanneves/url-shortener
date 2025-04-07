@@ -19,12 +19,13 @@ A aplicação estará disponível em http://urlshortener
 
 O sistema está configurado para ser executado com os seguintes containers:
 - **MongoDB**: Banco de dados
+- **Redis**: Sistema de cache para melhorar performance
 - **App**: Aplicação Next.js
 - **Nginx**: Servidor web que funciona como proxy reverso
 
 O fluxo de requisições é:
 ```
-Cliente → Nginx (porta 80) → Aplicação Next.js (porta 3000) → MongoDB
+Cliente → Nginx (porta 80) → Aplicação Next.js (porta 3000) → MongoDB/Redis
 ```
 
 ### Configuração do Domínio Local
@@ -121,17 +122,58 @@ npm run dev
 
 - Next.js
 - MongoDB
+- Redis
 - NextAuth.js
 - TailwindCSS
-- Docker
+- Chart.js (para visualização de estatísticas)
+- Docker e Docker Compose
+- Nginx
 
 ## Características
 
 - Encurtamento de URLs longas
 - Contador de cliques para cada URL encurtada
+- Histórico detalhado de estatísticas para cada URL
 - Interface moderna e responsiva
 - Armazenamento em MongoDB
 - Criação automatizada de usuário administrador na primeira execução
+- Sistema de autenticação completo (registro, login, recuperação de senha)
+- Painel administrativo para gerenciamento de usuários
+- Opções de visibilidade: URLs públicas e privadas
+- Filtros de visualização: Todas as URLs, Minhas URLs, URLs Públicas
+- Função de cópia para área de transferência com feedback visual
+- Funcionalidade de edição de URLs existentes
+- Cache com Redis para melhorar a performance
+
+## Funcionalidades Principais
+
+### Gerenciamento de URLs
+- Criação de URLs encurtadas com alias personalizados
+- Configuração de visibilidade (pública/privada) para cada URL
+- Edição de URLs existentes (alias, URL original e visibilidade)
+- Exclusão de URLs
+
+### Estatísticas
+- Contagem total de cliques
+- Histórico diário de acessos
+- Gráficos de visualização de tendências
+
+### Painel de Controle
+- Filtros para visualização de URLs (Todas, Minhas, Públicas)
+- Pesquisa por URL ou alias
+- Ordenação por data, cliques ou código
+- Paginação para facilitar a navegação
+
+### Administração
+- Gerenciamento completo de usuários
+- Visualização de todas as URLs no sistema
+- Capacidade de editar ou excluir URLs de qualquer usuário
+
+### Segurança
+- Proteção de URLs privadas (apenas o proprietário pode ver estatísticas)
+- Autenticação via NextAuth
+- Validação de formulários
+- Sanitização de entradas
 
 ## Requisitos
 
@@ -172,9 +214,14 @@ npm run dev
 ## Estrutura do Projeto
 
 - `pages/` - Páginas da aplicação (Next.js)
-- `pages/api/` - Endpoints da API
+  - `pages/api/` - Endpoints da API
+  - `pages/auth/` - Páginas de autenticação
+  - `pages/admin/` - Painel administrativo
+  - `pages/stats/` - Visualização de estatísticas de URLs
+  - `pages/urls/` - Gerenciamento de URLs
+- `components/` - Componentes reutilizáveis
 - `models/` - Modelos Mongoose
-- `lib/` - Utilitários e conexão com o banco de dados
+- `lib/` - Utilitários, conexão com banco de dados e Redis
 - `public/` - Arquivos estáticos
 - `styles/` - Estilos CSS
 - `init-admin.js` - Script para inicialização do usuário admin
@@ -193,6 +240,9 @@ As seguintes variáveis de ambiente podem ser configuradas:
 ```
 # MongoDB
 MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin
+
+# Redis
+REDIS_URI=redis://redis:6379
 
 # NextAuth
 NEXTAUTH_URL=http://localhost:3000
