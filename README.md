@@ -279,3 +279,50 @@ ADMIN_PASSWORD=@dm1n
 ## Licença
 
 ISC 
+
+## Suporte a Múltiplos Domínios
+
+A aplicação agora suporta o uso de múltiplos domínios para encurtar URLs. Isso permite que você tenha conjuntos de URLs distintos para diferentes domínios, mesmo que o código curto seja o mesmo.
+
+### Configuração
+
+1.  **Arquivo hosts**: Adicione entradas para todos os domínios que deseja usar. Exemplo:
+    ```
+    127.0.0.1 urlshortener
+    127.0.0.1 go
+    ```
+    Consulte a seção "Configuração do Domínio Local" para instruções sobre como editar este arquivo.
+
+2.  **`next.config.js`**: Adicione os domínios extras na configuração `images.domains`:
+    ```javascript
+    // next.config.js
+    images: {
+      domains: ['localhost', 'urlshortener', 'go'], // Adicione seus domínios aqui
+    },
+    ```
+
+3.  **`nginx.conf`** (se estiver usando Nginx): Adicione um novo bloco `server` para cada domínio adicional. Copie a estrutura do bloco existente para `urlshortener` e altere o `server_name`:
+    ```nginx
+    # nginx.conf
+    server {
+        listen 80;
+        server_name go; # Altere para o seu domínio adicional
+
+        # Mantenha as configurações de proxy e cache iguais ao bloco do urlshortener
+        location / {
+            proxy_pass http://app:3000;
+            # ... outras diretivas proxy ...
+        }
+        # ... outras locations ...
+    }
+    ```
+
+4.  **Reiniciar serviços**: Após as alterações, reinicie o Nginx (se aplicável) e a aplicação Next.js para que as novas configurações entrem em vigor.
+
+### Como Funciona
+
+- Quando uma URL é criada ou acessada, a aplicação identifica o domínio através do cabeçalho `Host` da requisição.
+- URLs são armazenadas no banco de dados com uma referência ao domínio ao qual pertencem.
+- O cache do Redis também utiliza o domínio como parte da chave, garantindo que o cache de um domínio não interfira no outro.
+
+Isso permite, por exemplo, que `http://urlshortener/meucodigo` e `http://go/meucodigo` apontem para URLs longas diferentes. 

@@ -8,7 +8,7 @@ const nextConfig = {
   
   // Otimização de imagens
   images: {
-    domains: ['localhost', 'urlshortener'], // Domínios permitidos para imagens
+    domains: ['localhost', 'urlshortener', 'go'], // Domínios permitidos para imagens
     formats: ['image/webp'], // Formatos adicionais
   },
   

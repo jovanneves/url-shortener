@@ -13,6 +13,11 @@ const UrlSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  domain: {
+    type: String,
+    required: true,
+    default: 'urlshortener',
+  },
   clicks: {
     type: Number,
     required: true,
@@ -53,5 +58,6 @@ const UrlSchema = new mongoose.Schema({
 // Índices compostos para otimizar consultas comuns
 UrlSchema.index({ userId: 1, isPublic: 1 });
 UrlSchema.index({ createdAt: -1 });
+UrlSchema.index({ domain: 1, urlCode: 1 }, { unique: true });
 
 export default mongoose.models.Url || mongoose.model('Url', UrlSchema); 
