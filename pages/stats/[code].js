@@ -728,7 +728,7 @@ function StatsContent() {
                         }).join(' ')}
                         fill="none"
                         stroke="#131a35"
-                        strokeWidth="1.5"
+                        strokeWidth="0.3"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className="dark:stroke-[#6d7cef]"
