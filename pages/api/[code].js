@@ -34,26 +34,26 @@ export default async function handler(req, res) {
     const useOnlyCache = req.query.useCache === 'true';
     // Parâmetro que força atualização do cache a partir do banco
     const forceRefresh = req.query.forceRefresh === 'true';
+    
+    // Para estatísticas, sempre força busca no banco de dados para garantir dados atualizados
+    const isStatsRequest = req.query.stats === 'true';
+    // Se for uma requisição de estatísticas, forçamos a atualização do cache
+    const shouldForceRefresh = forceRefresh || isStatsRequest;
 
-    console.log(`Procurando URL para código: ${code}, contabilizando clique: ${shouldCountClick}, apenas cache: ${useOnlyCache}, forçar atualização: ${forceRefresh}`);
+    console.log(`Procurando URL para código: ${code}, contabilizando clique: ${shouldCountClick}, apenas cache: ${useOnlyCache}, forçar atualização: ${shouldForceRefresh}`);
 
     // Se forceRefresh for true, buscamos no banco independente do cache
     let url = null;
     let fromCache = false;
     const cacheKey = `url:${code}`;
     
-    if (!forceRefresh) {
-      // Tenta obter a URL do cache do Redis primeiro
-      url = await getFromCache(cacheKey);
-    }
-    
-    // Se não estiver no cache e não for uma requisição para usar apenas o cache, ou se forceRefresh for true, busca no banco de dados
-    if ((!url && !useOnlyCache) || forceRefresh) {
-      console.log(`${forceRefresh ? 'Atualizando cache' : 'Cache miss'} para ${code}, buscando no banco de dados`);
+    // Se for uma requisição de estatísticas ou forceRefresh for true, buscamos diretamente do banco
+    if (shouldForceRefresh) {
+      console.log(`Requisição de estatísticas ou forçando atualização do cache para ${code}`);
       // Conecta ao banco de dados
       await dbConnect();
 
-      // Busca URL pelo código
+      // Busca URL pelo código incluindo explicitamente o clickHistory
       const dbUrl = await Url.findOne({ urlCode: code });
       
       if (!dbUrl) {
@@ -68,40 +68,112 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Esta URL é privada' });
       }
 
+      console.log(`clickHistory do banco: ${JSON.stringify(dbUrl.clickHistory)}`);
+      
       // Converte o modelo do Mongoose para um objeto simples
       url = dbUrl.toObject();
       
-      // Armazena no cache por 1 hora (3600 segundos)
-      console.log(`Armazenando no cache: ${cacheKey}`);
-      await setInCache(cacheKey, url, 3600);
-      
-      // Inicializa o contador de cliques pendentes
-      pendingClicks[code] = 0;
-      // Registra o momento atual como última atualização
-      lastUpdateTimes[code] = Math.floor(Date.now() / 1000);
-    } else if (!url && useOnlyCache) {
-      // Se foi solicitado apenas cache e não foi encontrado, retorna erro
-      console.log(`URL não encontrada no cache para código: ${code}`);
-      return res.status(404).json({ error: 'URL não encontrada no cache' });
-    } else {
-      fromCache = true;
-      console.log(`Cache hit para ${code}`);
-      
-      // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
-      if (url && !url.isPublic && url.userId && url.userId !== userId) {
-        // Se a URL é privada e o usuário não é o proprietário
-        console.log(`Acesso negado para URL privada (do cache): ${code}`);
-        return res.status(403).json({ error: 'Esta URL é privada' });
+      // Certifique-se de que clickHistory está incluído
+      if (!url.clickHistory) {
+        url.clickHistory = [];
       }
       
-      // Se não tem cliques pendentes, inicializa
+      // Atualiza o cache com os dados mais recentes do banco
+      console.log(`Atualizando cache com novos dados: ${cacheKey}, incluindo clickHistory: ${JSON.stringify(url.clickHistory)}`);
+      await setInCache(cacheKey, url, 3600);
+      
+      // Inicializa o contador de cliques pendentes se necessário
       if (pendingClicks[code] === undefined) {
         pendingClicks[code] = 0;
       }
       
-      // Se não tem registro de última atualização, inicializa
-      if (!lastUpdateTimes[code]) {
+      // Registra o momento atual como última atualização
+      lastUpdateTimes[code] = Math.floor(Date.now() / 1000);
+    } else if (!shouldForceRefresh) {
+      // Tenta obter a URL do cache do Redis primeiro
+      url = await getFromCache(cacheKey);
+      
+      // Se não estiver no cache e não for uma requisição para usar apenas o cache, busca no banco de dados
+      if (!url && !useOnlyCache) {
+        console.log(`Cache miss para ${code}, buscando no banco de dados`);
+        // Conecta ao banco de dados
+        await dbConnect();
+
+        // Busca URL pelo código
+        const dbUrl = await Url.findOne({ urlCode: code });
+        
+        if (!dbUrl) {
+          console.log(`URL não encontrada para código: ${code}`);
+          return res.status(404).json({ error: 'URL não encontrada' });
+        }
+
+        // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
+        if (!dbUrl.isPublic && dbUrl.userId && dbUrl.userId !== userId) {
+          // Se a URL é privada e o usuário não é o proprietário
+          console.log(`Acesso negado para URL privada: ${code}`);
+          return res.status(403).json({ error: 'Esta URL é privada' });
+        }
+
+        console.log(`clickHistory do banco: ${JSON.stringify(dbUrl.clickHistory)}`);
+        
+        // Converte o modelo do Mongoose para um objeto simples
+        url = dbUrl.toObject();
+        
+        // Certifique-se de que clickHistory está incluído
+        if (!url.clickHistory) {
+          url.clickHistory = [];
+        }
+        
+        // Armazena no cache por 1 hora (3600 segundos)
+        console.log(`Armazenando no cache: ${cacheKey}, incluindo clickHistory: ${JSON.stringify(url.clickHistory)}`);
+        await setInCache(cacheKey, url, 3600);
+        
+        // Inicializa o contador de cliques pendentes
+        pendingClicks[code] = 0;
+        // Registra o momento atual como última atualização
         lastUpdateTimes[code] = Math.floor(Date.now() / 1000);
+      } else if (!url && useOnlyCache) {
+        // Se foi solicitado apenas cache e não foi encontrado, retorna erro
+        console.log(`URL não encontrada no cache para código: ${code}`);
+        return res.status(404).json({ error: 'URL não encontrada no cache' });
+      } else {
+        fromCache = true;
+        console.log(`Cache hit para ${code}`);
+        
+        // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
+        if (url && !url.isPublic && url.userId && url.userId !== userId) {
+          // Se a URL é privada e o usuário não é o proprietário
+          console.log(`Acesso negado para URL privada (do cache): ${code}`);
+          return res.status(403).json({ error: 'Esta URL é privada' });
+        }
+        
+        // Se não tem cliques pendentes, inicializa
+        if (pendingClicks[code] === undefined) {
+          pendingClicks[code] = 0;
+        }
+        
+        // Se não tem registro de última atualização, inicializa
+        if (!lastUpdateTimes[code]) {
+          lastUpdateTimes[code] = Math.floor(Date.now() / 1000);
+        }
+        
+        // Se for uma requisição de estatísticas e o clickHistory estiver vazio, atualize o cache
+        if (isStatsRequest && (!url.clickHistory || url.clickHistory.length === 0)) {
+          console.log(`Requisição de estatísticas com clickHistory vazio, atualizando do banco`);
+          // Conecta ao banco de dados
+          await dbConnect();
+          
+          // Busca URL pelo código
+          const dbUrl = await Url.findOne({ urlCode: code });
+          
+          if (dbUrl && dbUrl.clickHistory && dbUrl.clickHistory.length > 0) {
+            console.log(`clickHistory encontrado no banco: ${JSON.stringify(dbUrl.clickHistory)}`);
+            // Atualiza o clickHistory no objeto url
+            url.clickHistory = dbUrl.clickHistory.map(item => item.toObject ? item.toObject() : item);
+            // Atualiza o cache
+            await setInCache(cacheKey, url, 3600);
+          }
+        }
       }
     }
     
@@ -163,6 +235,12 @@ export default async function handler(req, res) {
       }
     }
 
+    // Certifique-se de que o clickHistory não é vazio antes de retornar
+    if (!url.clickHistory) {
+      url.clickHistory = [];
+    }
+    
+    console.log(`Retornando URL com clickHistory: ${JSON.stringify(url.clickHistory)}`);
     return res.status(200).json(url);
   } catch (error) {
     console.error('Erro ao processar requisição:', error);
@@ -197,18 +275,18 @@ export async function updateClicksInDatabase(code, url, clicksToAdd) {
   // Atualiza ou cria o registro de hoje
   if (todayRecordIndex !== -1) {
     dbUrl.clickHistory[todayRecordIndex].count += clicksToAdd;
+    console.log(`Atualizando registro de hoje: ${dbUrl.clickHistory[todayRecordIndex].count} cliques`);
   } else {
     dbUrl.clickHistory.push({
       date: today,
       count: clicksToAdd
     });
+    console.log(`Criando novo registro de hoje: ${clicksToAdd} cliques`);
   }
   
   // Incrementa contador total de cliques
   dbUrl.clicks += clicksToAdd;
-  
-  // Não atualiza outros campos como longUrl, apenas os cliques
-  // Isso preserva os dados originais como URLs mesmo se alterados no banco
+  console.log(`Total de cliques atualizado para ${dbUrl.clicks}`);
   
   // Salva as mudanças no banco de dados
   await dbUrl.save();

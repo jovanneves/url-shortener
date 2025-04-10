@@ -25,28 +25,94 @@ function StatsContent() {
   const [clicksData, setClicksData] = useState([]);
   const [baseUrl, setBaseUrl] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [timeRange, setTimeRange] = useState('7d');
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
     setBaseUrl(window.location.origin);
   }, []);
 
+  // Função para gerar dados reais de cliques por dia
+  const generateRealClicksData = useCallback((clickHistory) => {
+    console.log('Gerando dados de cliques. Dados recebidos:', clickHistory);
+    
+    const now = new Date();
+    let days = 7; // Padrão: 7 dias
+    
+    // Ajusta o número de dias baseado no timeRange selecionado
+    switch(timeRange) {
+      case '30d':
+        days = 30;
+        break;
+      case '90d':
+        days = 90;
+        break;
+      default:
+        days = 7;
+    }
+    
+    const data = [];
+    
+    // Primeiro, vamos processar o histórico de cliques
+    const processedHistory = clickHistory.map(record => {
+      const date = new Date(record.date);
+      date.setHours(0, 0, 0, 0);
+      return {
+        date: date.getTime(),
+        count: record.count
+      };
+    });
+
+    console.log('Histórico processado:', processedHistory);
+
+    // Agora vamos gerar os dados para cada dia
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      
+      const diaDaSemana = date.toLocaleDateString('pt-BR', { weekday: 'long' });
+      const dataCompleta = date.toLocaleDateString('pt-BR');
+      const day = diaDaSemana.charAt(0).toUpperCase() + diaDaSemana.slice(1, 3);
+      
+      const currentDateTimestamp = date.getTime();
+      const matchingRecord = processedHistory.find(record => record.date === currentDateTimestamp);
+      
+      data.push({ 
+        day,
+        fullDay: diaDaSemana,
+        date: dataCompleta, 
+        clicks: matchingRecord ? matchingRecord.count : 0 
+      });
+    }
+    
+    console.log('Dados gerados para gráfico:', data);
+    setClicksData(data);
+  }, [timeRange]);
+
   const fetchUrlData = useCallback(async () => {
     if (!code) return;
 
     try {
+      console.log('Buscando dados da URL:', code);
       // Usa o parâmetro stats=true para buscar dados do cache
       const response = await fetch(`/api/${code}?stats=true&useCache=true`);
       
       if (response.ok) {
         const data = await response.json();
+        console.log('Dados recebidos:', data);
         setUrlData(data);
         
         // Usar dados reais de cliques
         if (data.clickHistory) {
+          console.log('Histórico de cliques encontrado:', data.clickHistory);
           generateRealClicksData(data.clickHistory);
+        } else {
+          console.log('Nenhum histórico de cliques encontrado');
+          setClicksData([]);
         }
       } else {
+        console.error('Erro ao buscar dados:', response.status);
         setError('URL não encontrada');
       }
     } catch (error) {
@@ -55,7 +121,7 @@ function StatsContent() {
     } finally {
       setLoading(false);
     }
-  }, [code]);
+  }, [code, generateRealClicksData]);
 
   useEffect(() => {
     fetchUrlData();
@@ -66,44 +132,6 @@ function StatsContent() {
     // Limpar intervalo ao desmontar o componente
     return () => clearInterval(intervalId);
   }, [fetchUrlData]);
-
-  // Função para gerar dados reais de cliques por dia
-  const generateRealClicksData = useCallback((clickHistory) => {
-    const days = 7; // Últimos 7 dias
-    const now = new Date();
-    const data = [];
-    
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      date.setHours(0, 0, 0, 0);
-      
-      // Usamos formato longo para maior clareza dos dias da semana
-      const diaDaSemana = date.toLocaleDateString('pt-BR', { weekday: 'long' });
-      // Formatamos também a data completa
-      const dataCompleta = date.toLocaleDateString('pt-BR');
-      
-      // Capitalize primeira letra e pegar apenas os primeiros 3 caracteres
-      const day = diaDaSemana.charAt(0).toUpperCase() + diaDaSemana.slice(1, 3);
-      
-      // Timestamp para comparação correta
-      const currentDateTimestamp = date.getTime();
-      const matchingRecord = clickHistory.find(record => {
-        const recordDate = new Date(record.date);
-        recordDate.setHours(0, 0, 0, 0);
-        return recordDate.getTime() === currentDateTimestamp;
-      });
-      
-      data.push({ 
-        day,
-        fullDay: diaDaSemana,
-        date: dataCompleta, 
-        clicks: matchingRecord ? matchingRecord.count : 0 
-      });
-    }
-    
-    setClicksData(data);
-  }, [setClicksData]);
 
   // Adicionar animação ao gráfico
   useEffect(() => {
@@ -117,6 +145,35 @@ function StatsContent() {
       });
     }
   }, [clicksData, loading, error]);
+
+  // Função para calcular estatísticas adicionais
+  const calculateAdditionalStats = useCallback((data) => {
+    if (!data || data.length === 0) return null;
+
+    const totalClicks = data.reduce((sum, item) => sum + item.clicks, 0);
+    const averageClicks = totalClicks / data.length;
+    const maxClicks = Math.max(...data.map(item => item.clicks));
+    const minClicks = Math.min(...data.map(item => item.clicks));
+    const maxClicksDay = data.find(item => item.clicks === maxClicks);
+    const minClicksDay = data.find(item => item.clicks === minClicks);
+
+    // Calcular tendência
+    const recentClicks = data.slice(-7).reduce((sum, item) => sum + item.clicks, 0);
+    const previousClicks = data.slice(-14, -7).reduce((sum, item) => sum + item.clicks, 0);
+    const trend = recentClicks > previousClicks ? 'up' : recentClicks < previousClicks ? 'down' : 'stable';
+
+    return {
+      averageClicks: averageClicks.toFixed(1),
+      maxClicks,
+      minClicks,
+      maxClicksDay,
+      minClicksDay,
+      trend,
+      trendPercentage: Math.abs(((recentClicks - previousClicks) / previousClicks) * 100).toFixed(1)
+    };
+  }, []);
+
+  const additionalStats = useMemo(() => calculateAdditionalStats(clicksData), [clicksData, calculateAdditionalStats]);
 
   // Memoizar componentes que não precisam ser recriados em cada renderização
   const UserProfile = useMemo(() => {
@@ -274,6 +331,49 @@ function StatsContent() {
       </div>
     );
   }, [urlData]);
+
+  // Função para exportar dados em CSV
+  const exportToCSV = useCallback(() => {
+    if (!clicksData || clicksData.length === 0) return;
+
+    const headers = ['Data', 'Dia da Semana', 'Cliques'];
+    const csvContent = [
+      headers.join(','),
+      ...clicksData.map(item => [
+        item.date,
+        item.fullDay,
+        item.clicks
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `estatisticas-${code}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [clicksData, code]);
+
+  // Função para calcular a altura das barras
+  function getBarHeight(clicks) {
+    if (!clicks || clicks === 0) return 0;
+    
+    // Encontra o valor máximo de cliques para normalização
+    const maxClicks = Math.max(...clicksData.map(item => item.clicks));
+    console.log('Calculando altura para:', clicks, 'cliques. Máximo:', maxClicks);
+    
+    // Se todos os valores forem 0, retorna 0
+    if (maxClicks === 0) return 0;
+    
+    // Calcula a altura como uma porcentagem do valor máximo
+    // Garante que o valor mínimo seja 5% e o máximo 95%
+    const height = (clicks / maxClicks) * 90;
+    const normalizedHeight = Math.max(5, Math.min(95, height));
+    return normalizedHeight;
+  }
 
   if (loading) return (
     <div className="min-h-screen flex flex-col">
@@ -545,101 +645,130 @@ function StatsContent() {
             <div className="grid grid-cols-1 gap-6 mb-8">
               <div className="bg-white dark:bg-dark-800 rounded-lg p-6 shadow-md border border-gray-100 dark:border-dark-700">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Cliques nos Últimos 7 Dias</h3>
-                  <div className="px-3 py-1 bg-[#131a35]/10 dark:bg-[#131a35]/30 text-[#131a35] dark:text-white text-sm font-medium rounded-full">
-                    {urlData.clicks} cliques totais
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Cliques por Período</h3>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={exportToCSV}
+                      className="px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-700 hover:bg-gray-50 dark:hover:bg-dark-700 flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Exportar CSV
+                    </button>
+                    <div className="px-3 py-1 bg-[#131a35]/10 dark:bg-[#131a35]/30 text-[#131a35] dark:text-white text-sm font-medium rounded-full">
+                      {urlData?.clicks || 0} cliques totais
+                    </div>
+                    <select
+                      value={timeRange}
+                      onChange={(e) => {
+                        console.log('Alterando período para:', e.target.value);
+                        setTimeRange(e.target.value);
+                      }}
+                      className="px-3 py-1.5 text-sm rounded-lg border bg-white dark:bg-dark-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-dark-700"
+                    >
+                      <option value="7d">Últimos 7 dias</option>
+                      <option value="30d">Últimos 30 dias</option>
+                      <option value="90d">Últimos 90 dias</option>
+                    </select>
                   </div>
                 </div>
-                
-                <div className="relative h-60 w-full">
-                  {/* Área do gráfico com gradiente */}
-                  <div className="absolute inset-0 flex items-end px-4 pb-12">
-                    {/* Grade horizontal */}
-                    <div className="absolute inset-0">
-                      {[0, 25, 50, 75, 100].map((position) => (
-                        <div 
-                          key={position} 
-                          className="absolute w-full border-b border-dashed border-gray-200 dark:border-dark-600"
-                          style={{ bottom: `${position}%`, height: '1px' }}
-                        />
-                      ))}
+
+                {/* Estatísticas adicionais */}
+                {additionalStats && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="bg-gray-50 dark:bg-dark-700 p-4 rounded-lg">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Média Diária</div>
+                      <div className="text-xl font-bold text-gray-800 dark:text-white">{additionalStats.averageClicks}</div>
                     </div>
-                    
-                    {/* Fundo gradiente */}
-                    <svg className="absolute left-0 right-0 bottom-0 h-full w-full" style={{ zIndex: 1 }}>
-                      <defs>
-                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                          <stop offset="0%" stopColor="rgba(19, 26, 53, 0.2)" className="dark:stopColor-[rgba(77,91,207,0.3)]" />
-                          <stop offset="100%" stopColor="rgba(19, 26, 53, 0)" className="dark:stopColor-[rgba(77,91,207,0)]" />
-                        </linearGradient>
-                      </defs>
-                      <path 
-                        d={`M0,${100 - getBarHeight(clicksData[0]?.clicks || 0)} 
-                           ${clicksData.map((item, i) => {
-                              const x = (100 / (clicksData.length - 1) * i) + '%';
-                              const height = getBarHeight(item.clicks);
-                              return `L${x},${100 - height}`;
-                            }).join(' ')} 
-                            L100%,${100 - getBarHeight(clicksData[clicksData.length - 1]?.clicks || 0)} L100%,100% L0,100% Z`}
-                        fill="url(#areaGradient)"
-                        className="transition-all duration-700 ease-in-out"
-                      />
-                    </svg>
-                    
-                    {/* Linha de conexão entre pontos - mais grossa e evidente */}
-                    <svg className="absolute inset-0 h-full w-full" style={{ zIndex: 2 }}>
+                    <div className="bg-gray-50 dark:bg-dark-700 p-4 rounded-lg">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Máximo</div>
+                      <div className="text-xl font-bold text-gray-800 dark:text-white">{additionalStats.maxClicks}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{additionalStats.maxClicksDay?.date}</div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-dark-700 p-4 rounded-lg">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Mínimo</div>
+                      <div className="text-xl font-bold text-gray-800 dark:text-white">{additionalStats.minClicks}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{additionalStats.minClicksDay?.date}</div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-dark-700 p-4 rounded-lg">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Tendência</div>
+                      <div className="flex items-center">
+                        <span className="text-xl font-bold text-gray-800 dark:text-white">
+                          {additionalStats.trend === 'up' ? '↑' : additionalStats.trend === 'down' ? '↓' : '→'}
+                        </span>
+                        <span className={`ml-2 text-sm ${
+                          additionalStats.trend === 'up' ? 'text-green-500' : 
+                          additionalStats.trend === 'down' ? 'text-red-500' : 
+                          'text-gray-500'
+                        }`}>
+                          {additionalStats.trendPercentage}%
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">vs período anterior</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Gráfico */}
+                {loading ? (
+                  <div className="h-64 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#131a35] dark:border-[#6d7cef]"></div>
+                  </div>
+                ) : clicksData.length > 0 ? (
+                  <div className="relative h-64">
+                    {/* Linha de conexão entre pontos - versão minimalista */}
+                    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 2 }}>
                       <polyline 
                         points={clicksData.map((item, index) => {
-                          const x = (100 / (clicksData.length - 1) * index) + '%';
+                          const x = (100 / (clicksData.length - 1) * index);
                           const height = getBarHeight(item.clicks);
-                          const y = (100 - height) + '%';
+                          const y = (100 - height);
                           return `${x},${y}`;
                         }).join(' ')}
                         fill="none"
                         stroke="#131a35"
-                        strokeWidth="3"
+                        strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         className="dark:stroke-[#6d7cef]"
                       />
                     </svg>
                     
-                    <div className="grid grid-cols-7 gap-2 w-full h-full relative" style={{ zIndex: 3 }}>
-                      {clicksData.map((item, index) => (
-                        <div key={index} className="flex flex-col h-full">
-                          {/* Número de cliques acima do ponto */}
-                          <div className="flex-1 flex items-end justify-center pb-2">
-                            <div className="relative">
-                              {/* Valor do clique sempre visível acima do ponto */}
-                              <div className="absolute bottom-7 left-1/2 transform -translate-x-1/2 bg-white dark:bg-dark-800 px-2 py-1 rounded shadow-sm border border-gray-200 dark:border-dark-700 text-xs font-semibold text-gray-800 dark:text-white">
-                                {item.clicks}
-                              </div>
-                              
-                              <div className="w-4 h-4 rounded-full bg-[#131a35] dark:bg-[#6d7cef] shadow-md relative">
-                                {/* Ponto maior e mais visível */}
-                                <div className="absolute inset-0 rounded-full bg-[#131a35] dark:bg-[#6d7cef] animate-ping opacity-75 duration-1000" style={{animationIterationCount: 1}}></div>
-                              </div>
-                              
-                              {/* Tooltip detalhado no hover */}
-                              <div className="opacity-0 hover:opacity-100 absolute -translate-x-1/2 left-1/2 -top-20 transform bg-[#131a35] dark:bg-[#1a234a] text-white px-3 py-2 rounded text-xs whitespace-nowrap transition-opacity duration-200 shadow-md z-10 pointer-events-none group-hover:pointer-events-auto w-32 text-center">
-                                <div className="font-bold text-sm">{item.clicks} cliques</div>
-                                <div className="text-xs text-gray-200">{item.fullDay}</div>
-                                <div className="text-[10px] opacity-80">{item.date}</div>
-                                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 rotate-45 w-2 h-2 bg-[#131a35] dark:bg-[#1a234a]"></div>
+                    {/* Pontos e valores */}
+                    <div className="absolute inset-0 h-full flex justify-between">
+                      {clicksData.map((item, index) => {
+                        const barHeight = getBarHeight(item.clicks);
+                        return (
+                          <div key={index} className="h-full flex flex-col justify-end pb-10" style={{width: `${100/clicksData.length}%`}}>
+                            <div 
+                              className="relative flex justify-center" 
+                              style={{height: `${barHeight}%`}}
+                            >
+                              <div className="absolute bottom-0 transform translate-y-1/2">
+                                {/* Apenas o número de cliques acima do pequeno ponto */}
+                                <div className="relative flex flex-col items-center">
+                                  <div className="mb-1 px-2 py-0.5 bg-white dark:bg-dark-800 rounded shadow-sm border border-gray-200 dark:border-dark-700 text-xs font-medium text-gray-800 dark:text-white">
+                                    {item.clicks}
+                                  </div>
+                                  <div className="w-2 h-2 rounded-full bg-[#131a35] dark:bg-[#6d7cef]"></div>
+                                </div>
                               </div>
                             </div>
+                            <div className="text-center mt-3">
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{item.day}</span>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">{item.date.split('/')[0]}</div>
+                            </div>
                           </div>
-                          
-                          {/* Dia da semana e data abaixo */}
-                          <div className="h-10 flex flex-col items-center">
-                            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{item.day}</span>
-                            <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">{item.date.split('/')[0]}</span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                    Nenhum dado disponível para exibição
+                  </div>
+                )}
               </div>
             </div>
 
@@ -693,12 +822,4 @@ function calculateDailyAverage(clicks, createdAt) {
   const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
   
   return (clicks / diffDays).toFixed(1);
-}
-
-function getBarHeight(clicks) {
-  // Calcula a altura das barras de forma logarítmica para melhor visualização e valores mais suaves
-  if (clicks === 0) return 5;
-  // Usa escala logarítmica para evitar que barras com poucos cliques fiquem muito pequenas
-  // e barras com muitos cliques fiquem desproporcionalmente grandes
-  return Math.min(85, Math.max(10, 15 * Math.log2(clicks + 2) + 5));
 } 
