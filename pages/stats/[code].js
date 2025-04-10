@@ -26,6 +26,9 @@ function StatsContent() {
   const [baseUrl, setBaseUrl] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [timeRange, setTimeRange] = useState('7d');
+  const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState('stats');
+  const [showShareOptions, setShowShareOptions] = useState(false);
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
@@ -374,6 +377,47 @@ function StatsContent() {
     const normalizedHeight = Math.max(5, Math.min(95, height));
     return normalizedHeight;
   }
+
+  // Função para copiar URL para o clipboard
+  const copyToClipboard = useCallback(() => {
+    if (!baseUrl || !code) return;
+    
+    const shortUrl = `${baseUrl}/${code}`;
+    navigator.clipboard.writeText(shortUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [baseUrl, code]);
+
+  // Função para compartilhar URL
+  const shareUrl = useCallback((platform) => {
+    if (!baseUrl || !code) return;
+    
+    const shortUrl = `${baseUrl}/${code}`;
+    const urlTitle = urlData?.longUrl || 'URL Encurtada';
+    
+    let shareUrl = '';
+    switch(platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shortUrl)}&text=${encodeURIComponent('Confira este link: ')}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shortUrl)}`;
+        break;
+      case 'whatsapp':
+        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent('Confira este link: ' + shortUrl)}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shortUrl)}`;
+        break;
+    }
+    
+    if (shareUrl) {
+      window.open(shareUrl, '_blank');
+    }
+    
+    setShowShareOptions(false);
+  }, [baseUrl, code, urlData]);
 
   if (loading) return (
     <div className="min-h-screen flex flex-col">
