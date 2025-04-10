@@ -281,8 +281,8 @@ function GlobalStatsContent() {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
         <Head>
-          <title>Estatísticas Globais | URL Shortener</title>
-          <meta name="description" content="Estatísticas globais do encurtador de URL" />
+          <title>Estatísticas | URL Shortener</title>
+          <meta name="description" content="Estatísticas do encurtador de URL" />
         </Head>
 
         {/* Header com gradiente */}
@@ -345,8 +345,8 @@ function GlobalStatsContent() {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
         <Head>
-          <title>Estatísticas Globais | URL Shortener</title>
-          <meta name="description" content="Estatísticas globais do encurtador de URL" />
+          <title>Estatísticas | URL Shortener</title>
+          <meta name="description" content="Estatísticas do encurtador de URL" />
         </Head>
 
         {/* Header com gradiente */}
@@ -422,8 +422,8 @@ function GlobalStatsContent() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
       <Head>
-        <title>Estatísticas Globais | URL Shortener</title>
-        <meta name="description" content="Estatísticas globais do encurtador de URL" />
+        <title>Estatísticas | URL Shortener</title>
+        <meta name="description" content="Estatísticas do encurtador de URL" />
       </Head>
 
       {/* Header com gradiente */}
@@ -474,7 +474,7 @@ function GlobalStatsContent() {
                     </svg>
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas Globais</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
                     <p className="text-gray-500 dark:text-gray-400 text-sm">
                       Visualize os dados de todas as suas URLs encurtadas
                     </p>
