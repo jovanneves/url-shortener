@@ -28,8 +28,8 @@ export default function MainLayout({ children, title = 'URL Shortener' }) {
             </div>
             <nav className="flex items-center space-x-4">
               <ThemeToggle />
-              <Link 
-                href="/urls" 
+              <Link
+                href="/urls"
                 className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors"
                 aria-label="Minhas URLs"
               >
@@ -38,10 +38,10 @@ export default function MainLayout({ children, title = 'URL Shortener' }) {
                 </svg>
                 Minhas URLs
               </Link>
-              
+
               {session?.user?.isAdmin && (
-                <Link 
-                  href="/admin/users" 
+                <Link
+                  href="/admin/users"
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors"
                   aria-label="Painel Admin"
                 >
@@ -71,22 +71,22 @@ export default function MainLayout({ children, title = 'URL Shortener' }) {
               </p>
             </div>
             <div className="flex space-x-6">
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                 aria-label="Termos de uso"
               >
                 Termos
               </a>
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                 aria-label="Política de privacidade"
               >
                 Privacidade
               </a>
-              <a 
-                href="#" 
+              <a
+                href="#"
                 className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                 aria-label="Entre em contato"
               >
