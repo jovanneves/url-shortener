@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import ThemeToggle from '../components/ThemeToggle';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 export default function Home() {
   const [longUrl, setLongUrl] = useState('');
@@ -23,6 +24,14 @@ export default function Home() {
   const [shakeError, setShakeError] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
   const { data: session } = useSession();
+  const router = useRouter();
+
+  // Verificar parâmetro showAdd na URL para abrir formulário automaticamente
+  useEffect(() => {
+    if (router.query.showAdd === 'true' && !showAddForm && !success) {
+      setShowAddForm(true);
+    }
+  }, [router.query, showAddForm, success]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -212,7 +221,7 @@ export default function Home() {
       {/* Header com gradiente */}
       <header className="bg-gradient-to-r from-[#131a35] to-[#1a234a] shadow-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-white flex items-center">
                 <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -221,7 +230,7 @@ export default function Home() {
                 URL Shortener
               </h1>
             </div>
-            <nav className="flex items-center gap-4">
+            <nav className="flex flex-wrap items-center gap-3">
               <ThemeToggle />
               <Link href="/urls" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -237,6 +246,18 @@ export default function Home() {
                   </svg>
                   Admin
                 </Link>
+              )}
+              
+              {session && (
+                <button 
+                  onClick={() => signOut()}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sair
+                </button>
               )}
             </nav>
           </div>
@@ -264,7 +285,7 @@ export default function Home() {
                 {!showAddForm && !success && (
                   <div className="bg-gray-50 dark:bg-dark-700 rounded-xl p-6 shadow-inner mb-8">
                     <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-center gap-4">
-                      <div className="relative flex-grow">
+                      <div className="relative flex-grow w-full">
                         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                           <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -303,7 +324,7 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                      <div className="flex gap-2 w-full sm:w-auto">
+                      <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-start mt-3 sm:mt-0">
                         <button 
                           type="submit"
                           disabled={isSearching}
@@ -520,10 +541,10 @@ export default function Home() {
                     </button>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <Link 
                       href={`/stats/${urlCode}`}
-                      className="flex-1 px-4 py-2 bg-[#131a35] text-white rounded-md shadow-sm font-medium text-sm flex items-center justify-center hover:bg-[#1a234a] transition-colors"
+                      className="flex-1 px-4 py-3 bg-[#131a35] text-white rounded-md shadow-sm font-medium text-sm flex items-center justify-center hover:bg-[#1a234a] transition-colors"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -534,7 +555,7 @@ export default function Home() {
                       href={`${baseUrl}/${shortUrl}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="flex-1 px-4 py-2 bg-white dark:bg-dark-700 text-gray-800 dark:text-gray-200 rounded-md shadow-sm font-medium text-sm border border-gray-300 dark:border-dark-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
+                      className="flex-1 px-4 py-3 bg-white dark:bg-dark-700 text-gray-800 dark:text-gray-200 rounded-md shadow-sm font-medium text-sm border border-gray-300 dark:border-dark-600 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -548,7 +569,7 @@ export default function Home() {
                         setSuccess(false);
                         setShowAddForm(true);
                       }} 
-                      className="flex-1 px-4 py-2 bg-gray-100 dark:bg-dark-600 text-gray-700 dark:text-gray-300 rounded-md shadow-sm font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-dark-500 transition-colors"
+                      className="flex-1 px-4 py-3 bg-gray-100 dark:bg-dark-600 text-gray-700 dark:text-gray-300 rounded-md shadow-sm font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-dark-500 transition-colors"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />

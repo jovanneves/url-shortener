@@ -29,12 +29,39 @@ function UrlsContent() {
   const [deleting, setDeleting] = useState(false);
   // Estado para controlar atualizações de visibilidade
   const [updating, setUpdating] = useState(false);
+  // Estados para paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
     setBaseUrl(window.location.origin);
   }, []);
 
+  // Calcular índices dos itens a exibir na página atual
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentUrls = urls.slice(indexOfFirstItem, indexOfLastItem);
+  
+  // Calcular número total de páginas
+  const totalPages = Math.ceil(urls.length / itemsPerPage);
+  
+  // Função para mudar de página
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  
+  // Funções para navegação
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  
   // Buscar URLs do usuário
   useEffect(() => {
     const fetchUrls = async () => {
@@ -134,8 +161,14 @@ function UrlsContent() {
       
       if (response.ok) {
         // Atualizar a lista após exclusão bem-sucedida
-        setUrls(urls.filter(url => url.urlCode !== urlToDelete.urlCode));
+        const updatedUrls = urls.filter(url => url.urlCode !== urlToDelete.urlCode);
+        setUrls(updatedUrls);
         setShowDeleteModal(false);
+        
+        // Ajustar a página atual se necessário após a exclusão
+        if (currentUrls.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
       } else {
         console.error('Erro ao excluir URL:', response.status);
         alert('Erro ao excluir a URL');
@@ -190,7 +223,7 @@ function UrlsContent() {
 
             <div className="flex items-center gap-3">
               <Link 
-                href="/"
+                href="/?showAdd=true"
                 className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,7 +286,7 @@ function UrlsContent() {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-700">
-                  {urls.map((url) => (
+                  {currentUrls.map((url) => (
                     <tr key={url.urlCode} className="hover:bg-gray-50 dark:hover:bg-dark-750 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -363,6 +396,60 @@ function UrlsContent() {
                 </tbody>
               </table>
             </div>
+            
+            {/* Paginação */}
+            {urls.length > itemsPerPage && (
+              <div className="bg-gray-50 dark:bg-dark-750 px-4 py-3 border-t border-gray-200 dark:border-dark-700 sm:px-6">
+                <div className="flex justify-between items-center">
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, urls.length)}</span> de <span className="font-medium">{urls.length}</span> resultados
+                  </div>
+                  <nav className="flex items-center space-x-2">
+                    <button
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded-md border ${
+                        currentPage === 1
+                          ? 'border-gray-200 dark:border-dark-600 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                          : 'border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <button
+                        key={i + 1}
+                        onClick={() => paginate(i + 1)}
+                        className={`px-3.5 py-2 rounded-md border ${
+                          currentPage === i + 1
+                            ? 'bg-[#131a35] dark:bg-[#6d7cef] text-white border-[#131a35] dark:border-[#6d7cef]'
+                            : 'border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded-md border ${
+                        currentPage === totalPages
+                          ? 'border-gray-200 dark:border-dark-600 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                          : 'border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
