@@ -67,7 +67,9 @@ function UrlsContent() {
     const fetchUrls = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/urls');
+        const response = await fetch('/api/urls', {
+          credentials: 'include', // Envia cookies de autenticação com a requisição
+        });
         
         if (response.ok) {
           const data = await response.json();
@@ -117,6 +119,7 @@ function UrlsContent() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Envia cookies de autenticação com a requisição
         body: JSON.stringify({ 
           urlCode: url.urlCode, 
           isPublic: newVisibility 
@@ -157,6 +160,7 @@ function UrlsContent() {
       setDeleting(true);
       const response = await fetch(`/api/urls/${urlToDelete.urlCode}`, {
         method: 'DELETE',
+        credentials: 'include', // Envia cookies de autenticação com a requisição
       });
       
       if (response.ok) {

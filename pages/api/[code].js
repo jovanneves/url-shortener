@@ -39,6 +39,9 @@ export default async function handler(req, res) {
     const isStatsRequest = req.query.stats === 'true';
     // Se for uma requisição de estatísticas, forçamos a atualização do cache
     const shouldForceRefresh = forceRefresh || isStatsRequest;
+    
+    // Parâmetro específico para acesso público
+    const publicAccess = req.query.public === 'true';
 
     console.log(`Procurando URL para código: ${code}, contabilizando clique: ${shouldCountClick}, apenas cache: ${useOnlyCache}, forçar atualização: ${shouldForceRefresh}`);
 
@@ -62,10 +65,17 @@ export default async function handler(req, res) {
       }
 
       // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
-      if (!dbUrl.isPublic && dbUrl.userId && dbUrl.userId !== userId) {
-        // Se a URL é privada e o usuário não é o proprietário
-        console.log(`Acesso negado para URL privada: ${code}`);
-        return res.status(403).json({ error: 'Esta URL é privada' });
+      if (!dbUrl.isPublic) {
+        // Se a URL é privada, verificamos se o usuário está autenticado
+        if (!userId) {
+          return res.status(401).json({ error: 'Autenticação necessária para acessar esta URL privada' });
+        }
+        
+        // Verifica se o usuário é o proprietário ou é admin
+        if (dbUrl.userId !== userId && !session.user.isAdmin) {
+          console.log(`Acesso negado para URL privada: ${code}`);
+          return res.status(403).json({ error: 'Esta URL é privada' });
+        }
       }
 
       console.log(`clickHistory do banco: ${JSON.stringify(dbUrl.clickHistory)}`);
@@ -108,10 +118,17 @@ export default async function handler(req, res) {
         }
 
         // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
-        if (!dbUrl.isPublic && dbUrl.userId && dbUrl.userId !== userId) {
-          // Se a URL é privada e o usuário não é o proprietário
-          console.log(`Acesso negado para URL privada: ${code}`);
-          return res.status(403).json({ error: 'Esta URL é privada' });
+        if (!dbUrl.isPublic) {
+          // Se a URL é privada, verificamos se o usuário está autenticado
+          if (!userId && !publicAccess) {
+            return res.status(401).json({ error: 'Autenticação necessária para acessar esta URL privada' });
+          }
+          
+          // Se não for publicAccess, verifica se o usuário é o proprietário ou é admin
+          if (!publicAccess && dbUrl.userId !== userId && !session?.user?.isAdmin) {
+            console.log(`Acesso negado para URL privada: ${code}`);
+            return res.status(403).json({ error: 'Esta URL é privada' });
+          }
         }
 
         console.log(`clickHistory do banco: ${JSON.stringify(dbUrl.clickHistory)}`);
@@ -141,10 +158,17 @@ export default async function handler(req, res) {
         console.log(`Cache hit para ${code}`);
         
         // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
-        if (url && !url.isPublic && url.userId && url.userId !== userId) {
-          // Se a URL é privada e o usuário não é o proprietário
-          console.log(`Acesso negado para URL privada (do cache): ${code}`);
-          return res.status(403).json({ error: 'Esta URL é privada' });
+        if (url && !url.isPublic) {
+          // Se a URL é privada, verificamos se o usuário está autenticado
+          if (!userId && !publicAccess) {
+            return res.status(401).json({ error: 'Autenticação necessária para acessar esta URL privada' });
+          }
+          
+          // Se não for publicAccess, verifica se o usuário é o proprietário ou é admin
+          if (!publicAccess && url.userId !== userId && !session?.user?.isAdmin) {
+            console.log(`Acesso negado para URL privada (do cache): ${code}`);
+            return res.status(403).json({ error: 'Esta URL é privada' });
+          }
         }
         
         // Se não tem cliques pendentes, inicializa

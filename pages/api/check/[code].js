@@ -28,6 +28,9 @@ export default async function handler(req, res) {
     
     // Parâmetro que indica se devemos usar apenas o cache sem verificar o banco de dados
     const useOnlyCache = req.query.useCache === 'true';
+    
+    // Parâmetro específico para acesso público
+    const publicAccess = req.query.public === 'true';
 
     // ALTERAÇÃO: Verifica se stats é exatamente 'true' para não contabilizar cliques
     // Qualquer outro valor (incluindo 'false' ou undefined) vai contabilizar cliques
@@ -57,9 +60,19 @@ export default async function handler(req, res) {
       }
       
       // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
-      if (!dbUrl.isPublic && dbUrl.userId && dbUrl.userId !== userId) {
-        // Para URLs privadas, fingimos que não existe para não-proprietários
-        return res.status(200).json({ exists: false, isPrivate: true });
+      if (!dbUrl.isPublic) {
+        // Se a URL é privada e não é um acesso público explicitamente solicitado
+        if (!publicAccess) {
+          // Se o usuário não está autenticado
+          if (!userId) {
+            return res.status(200).json({ exists: false, isPrivate: true, requiresAuth: true });
+          }
+          
+          // Se o usuário não é o proprietário ou admin
+          if (dbUrl.userId !== userId && !session?.user?.isAdmin) {
+            return res.status(200).json({ exists: false, isPrivate: true });
+          }
+        }
       }
       
       // Converte o modelo do Mongoose para um objeto simples
@@ -82,9 +95,19 @@ export default async function handler(req, res) {
       console.log(`Cache hit no endpoint de verificação para ${code}`);
       
       // Verifica se a URL é privada e se o usuário tem permissão para acessá-la
-      if (url && !url.isPublic && url.userId && url.userId !== userId) {
-        // Para URLs privadas, fingimos que não existe para não-proprietários
-        return res.status(200).json({ exists: false, isPrivate: true });
+      if (url && !url.isPublic) {
+        // Se a URL é privada e não é um acesso público explicitamente solicitado
+        if (!publicAccess) {
+          // Se o usuário não está autenticado
+          if (!userId) {
+            return res.status(200).json({ exists: false, isPrivate: true, requiresAuth: true });
+          }
+          
+          // Se o usuário não é o proprietário ou admin
+          if (url.userId !== userId && !session?.user?.isAdmin) {
+            return res.status(200).json({ exists: false, isPrivate: true });
+          }
+        }
       }
       
       // Se não tem cliques pendentes, inicializa

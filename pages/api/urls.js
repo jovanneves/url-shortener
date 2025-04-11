@@ -13,17 +13,24 @@ export default async function handler(req, res) {
     try {
       // Verifica se há um usuário logado
       const session = await getServerSession(req, res, authOptions);
-      const userId = session?.user?.id;
-
+      
       // Parâmetros da requisição
       const useOnlyCache = req.query.useCache === 'true';
       const showAll = req.query.all === 'true'; // Mostrar todas as URLs (apenas para admin)
       const onlyPublic = req.query.onlyPublic === 'true'; // Mostrar apenas URLs públicas
       const onlyMine = req.query.onlyMine === 'true'; // Mostrar apenas URLs do usuário
+      const publicAccess = req.query.public === 'true'; // Parâmetro específico para acesso público
 
-      // Se não houver usuário logado, retorna apenas URLs públicas
-      if (!userId) {
-        console.log('Usuário não logado, buscando apenas URLs públicas');
+      // Verifica a autenticação, exceto quando especificamente solicitado acesso público
+      if (!session?.user && !publicAccess) {
+        return res.status(401).json({ error: 'Não autorizado. Faça login para acessar este recurso.' });
+      }
+
+      const userId = session?.user?.id;
+
+      // Se for uma solicitação de acesso público, retorna apenas URLs públicas
+      if (publicAccess && !userId) {
+        console.log('Acesso público solicitado, buscando apenas URLs públicas');
         const publicUrls = await Url.find({ isPublic: true }).sort({ createdAt: -1 });
         return res.status(200).json(publicUrls);
       }
