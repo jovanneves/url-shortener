@@ -279,410 +279,411 @@ function GlobalStatsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
-        <Head>
-          <title>Estatísticas | URL Shortener</title>
-          <meta name="description" content="Estatísticas do encurtador de URL" />
-        </Head>
-
-        {/* Header com gradiente */}
-        <header className="bg-gradient-to-r from-[#131a35] to-[#1a234a] shadow-md">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-white flex items-center">
-                  <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
-                  </svg>
-                  URL Shortener
-                </h1>
-              </div>
-              <nav className="flex items-center gap-4">
-                <ThemeToggle />
-                <Link href="/urls" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Minhas URLs
-                </Link>
-                
-                {session?.user?.isAdmin && (
-                  <Link href="/admin/users" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Admin
-                  </Link>
-                )}
-              </nav>
-            </div>
+      <div className="min-h-screen flex">
+        <div className="w-60 bg-[#131a35] text-white p-6 flex flex-col">
+          <div className="text-2xl font-bold mb-8 pb-4 border-b border-white/10">
+            <span className="flex items-center">
+              <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+              </svg>
+              URLShortener
+            </span>
           </div>
-        </header>
-
-        <main className="flex-1">
-          <div className="py-8">
-            <div className="max-w-7xl mx-auto px-4">
-              {/* Skeleton loading content */}
-            </div>
+          <nav className="flex flex-col gap-2">
+            <Link href="/" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Início
+            </Link>
+            <Link href="/urls" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Minhas URLs
+            </Link>
+            
+            <Link href="/stats/all" className="flex items-center p-3 rounded-lg bg-[#1a234a]/70 font-medium">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Estatísticas
+            </Link>
+            
+            <Link href="/auth/profile" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Meu Perfil
+            </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </Link>
+            )}
+          </nav>
+          <div className="mt-auto pt-8 flex justify-center">
+            <DashboardThemeToggle />
           </div>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-dark-700 mt-auto">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex justify-center items-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                © {new Date().getFullYear()} - Todos os direitos reservados
-              </p>
-            </div>
+        </div>
+        <div className="flex-1 bg-gray-50 dark:bg-dark-900 p-8">
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-12 h-12 border-4 border-gray-200 dark:border-dark-700 border-t-[#131a35] dark:border-t-[#131a35]/80 rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Carregando dados...</p>
           </div>
-        </footer>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
-        <Head>
-          <title>Estatísticas | URL Shortener</title>
-          <meta name="description" content="Estatísticas do encurtador de URL" />
-        </Head>
-
-        {/* Header com gradiente */}
-        <header className="bg-gradient-to-r from-[#131a35] to-[#1a234a] shadow-md">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold text-white flex items-center">
-                  <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
-                  </svg>
-                  URL Shortener
-                </h1>
-              </div>
-              <nav className="flex items-center gap-4">
-                <ThemeToggle />
-                <Link href="/urls" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Minhas URLs
-                </Link>
-                
-                {session?.user?.isAdmin && (
-                  <Link href="/admin/users" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
-                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Admin
-                  </Link>
-                )}
-              </nav>
-            </div>
+      <div className="min-h-screen flex">
+        <div className="w-60 bg-[#131a35] text-white p-6 flex flex-col">
+          <div className="text-2xl font-bold mb-8 pb-4 border-b border-white/10">
+            <span className="flex items-center">
+              <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+              </svg>
+              URLShortener
+            </span>
           </div>
-        </header>
-
-        <main className="flex-1">
-          <div className="py-8">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="bg-white dark:bg-dark-800 rounded-lg p-8 shadow-md border border-gray-100 dark:border-dark-700 text-center">
-                <div className="text-red-500 mb-4">
-                  <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Erro ao Carregar Estatísticas</h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
-                <button 
-                  onClick={() => router.push('/')}
-                  className="px-4 py-2 bg-[#131a35] hover:bg-[#1d2754] text-white rounded-lg transition-colors duration-200"
-                >
-                  Voltar ao Início
-                </button>
-              </div>
-            </div>
+          <nav className="flex flex-col gap-2">
+            <Link href="/" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Início
+            </Link>
+            <Link href="/urls" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Minhas URLs
+            </Link>
+            
+            <Link href="/stats/all" className="flex items-center p-3 rounded-lg bg-[#1a234a]/70 font-medium">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Estatísticas
+            </Link>
+            
+            <Link href="/auth/profile" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Meu Perfil
+            </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Gerenciar Usuários
+              </Link>
+            )}
+          </nav>
+          <div className="mt-auto pt-8 flex justify-center">
+            <DashboardThemeToggle />
           </div>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-dark-700 mt-auto">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex justify-center items-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                © {new Date().getFullYear()} - Todos os direitos reservados
-              </p>
-            </div>
+        </div>
+        <div className="flex-1 bg-gray-50 dark:bg-dark-900 p-8">
+          <div className="flex flex-col items-center justify-center p-16 text-center">
+            <div className="text-4xl mb-4 text-red-500">❌</div>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Erro</h2>
+            <p className="text-red-500 mb-6">{error}</p>
+            <Link href="/urls" className="inline-flex items-center px-4 py-2 bg-[#131a35] hover:bg-[#1a234a] text-white font-medium rounded-lg transition-colors">
+              Voltar para minhas URLs
+            </Link>
           </div>
-        </footer>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
+    <div className="min-h-screen flex flex-col">
       <Head>
         <title>Estatísticas | URL Shortener</title>
         <meta name="description" content="Estatísticas do encurtador de URL" />
       </Head>
 
-      {/* Header com gradiente */}
-      <header className="bg-gradient-to-r from-[#131a35] to-[#1a234a] shadow-md">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-white flex items-center">
-                <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                  <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+      <div className="flex flex-1">
+        <div className="w-60 bg-[#131a35] text-white p-6 flex flex-col">
+          <div className="text-2xl font-bold mb-8 pb-4 border-b border-white/10">
+            <span className="flex items-center">
+              <svg className="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+              </svg>
+              URLShortener
+            </span>
+          </div>
+          <nav className="flex flex-col gap-2">
+            <Link href="/" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Início
+            </Link>
+            <Link href="/urls" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              Minhas URLs
+            </Link>
+            
+            <Link href="/stats/all" className="flex items-center p-3 rounded-lg bg-[#1a234a]/70 font-medium">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Estatísticas
+            </Link>
+            
+            <Link href="/auth/profile" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+              <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Meu Perfil
+            </Link>
+            
+            {session?.user?.isAdmin && (
+              <Link href="/admin/users" className="flex items-center p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                URL Shortener
-              </h1>
-            </div>
-            <nav className="flex items-center gap-4">
-              <ThemeToggle />
-              <Link href="/urls" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Minhas URLs
+                Gerenciar Usuários
               </Link>
-              
-              {session?.user?.isAdmin && (
-                <Link href="/admin/users" className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-[#293366]/30 border border-[#ffffff20] rounded-md hover:bg-[#293366]/50 transition-colors">
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  Admin
-                </Link>
-              )}
-            </nav>
+            )}
+          </nav>
+          <div className="mt-auto pt-8 flex justify-center">
+            <DashboardThemeToggle />
           </div>
         </div>
-      </header>
 
-      <main className="flex-1">
-        <div className="py-8">
-          <div className="max-w-7xl mx-auto px-4 animate-fadeIn">
+        <div className="flex-1 flex flex-col bg-gray-50 dark:bg-dark-900">
+          <div className="flex-1 p-8">
+            {/* Título da página */}
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
+            </div>
+
             {/* Conteúdo principal (cabeçalho, cards, filtros, e heatmap) */}
-            {/* Cabeçalho com ações */}
-            <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center">
-                  <div className="bg-[#131a35] dark:bg-[#6d7cef] p-3 rounded-lg mr-4">
-                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+            <div className="max-w-7xl mx-auto px-4 animate-fadeIn">
+              {/* Cabeçalho com ações */}
+              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="flex items-center">
+                    <div className="bg-[#131a35] dark:bg-[#6d7cef] p-3 rounded-lg mr-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        Visualize os dados de todas as suas URLs encurtadas
+                      </p>
+                    </div>
                   </div>
+
+                  <div className="flex items-center gap-3">
+                    <Link 
+                      href="/"
+                      className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Nova URL
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cards com resumo de estatísticas */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total de URLs</p>
+                      <h3 className="text-3xl font-bold text-gray-800 dark:text-white">{urlsData.length || 0}</h3>
+                    </div>
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                      <svg className="w-6 h-6 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    No período selecionado
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total de Cliques</p>
+                      <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
+                        {urlsData.reduce((sum, url) => sum + url.clicks, 0) || 0}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
+                      <svg className="w-6 h-6 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Total acumulado
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Média de Cliques</p>
+                      <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
+                        {urlsData.length 
+                          ? (urlsData.reduce((sum, url) => sum + url.clicks, 0) / urlsData.length).toFixed(1) 
+                          : '0'}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
+                      <svg className="w-6 h-6 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Por URL
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">URL Mais Popular</p>
+                      <h3 className="text-xl font-bold text-gray-800 dark:text-white truncate">
+                        {urlsData.length > 0 
+                          ? urlsData.sort((a, b) => b.clicks - a.clicks)[0].urlCode 
+                          : 'N/A'}
+                      </h3>
+                    </div>
+                    <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+                      <svg className="w-6 h-6 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    {urlsData.length > 0 
+                      ? `${urlsData.sort((a, b) => b.clicks - a.clicks)[0].clicks} cliques` 
+                      : 'Sem dados'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Filtros e controles */}
+              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
-                      Visualize os dados de todas as suas URLs encurtadas
+                    <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Mapa de Calor de Cliques</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      As cores indicam a intensidade de cliques em cada período
                     </p>
                   </div>
-                </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-dark-700">
+                      <button
+                        onClick={() => setActiveTab('weekly')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                          activeTab === 'weekly' 
+                            ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
+                            : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
+                        }`}
+                      >
+                        Semanal
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('monthly')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors ${
+                          activeTab === 'monthly' 
+                            ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
+                            : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
+                        }`}
+                      >
+                        Mensal
+                      </button>
+                    </div>
 
-                <div className="flex items-center gap-3">
-                  <Link 
-                    href="/"
-                    className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Nova URL
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Cards com resumo de estatísticas */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total de URLs</p>
-                    <h3 className="text-3xl font-bold text-gray-800 dark:text-white">{urlsData.length || 0}</h3>
-                  </div>
-                  <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                    <svg className="w-6 h-6 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  No período selecionado
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Total de Cliques</p>
-                    <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
-                      {urlsData.reduce((sum, url) => sum + url.clicks, 0) || 0}
-                    </h3>
-                  </div>
-                  <div className="p-2 bg-green-50 dark:bg-green-900/30 rounded-lg">
-                    <svg className="w-6 h-6 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Total acumulado
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Média de Cliques</p>
-                    <h3 className="text-3xl font-bold text-gray-800 dark:text-white">
-                      {urlsData.length 
-                        ? (urlsData.reduce((sum, url) => sum + url.clicks, 0) / urlsData.length).toFixed(1) 
-                        : '0'}
-                    </h3>
-                  </div>
-                  <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
-                    <svg className="w-6 h-6 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Por URL
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 transition-all hover:shadow-lg hover:translate-y-[-2px]">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">URL Mais Popular</p>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white truncate">
-                      {urlsData.length > 0 
-                        ? urlsData.sort((a, b) => b.clicks - a.clicks)[0].urlCode 
-                        : 'N/A'}
-                    </h3>
-                  </div>
-                  <div className="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
-                    <svg className="w-6 h-6 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  {urlsData.length > 0 
-                    ? `${urlsData.sort((a, b) => b.clicks - a.clicks)[0].clicks} cliques` 
-                    : 'Sem dados'}
-                </div>
-              </div>
-            </div>
-
-            {/* Filtros e controles */}
-            <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 mb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Mapa de Calor de Cliques</h2>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    As cores indicam a intensidade de cliques em cada período
-                  </p>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-dark-700">
-                    <button
-                      onClick={() => setActiveTab('weekly')}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
-                        activeTab === 'weekly' 
-                          ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
-                          : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
-                      }`}
+                    <select
+                      value={periodFilter}
+                      onChange={(e) => setPeriodFilter(e.target.value)}
+                      className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#131a35] dark:focus:ring-[#6d7cef] cursor-pointer"
                     >
-                      Semanal
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('monthly')}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
-                        activeTab === 'monthly' 
-                          ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
-                          : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
-                      }`}
-                    >
-                      Mensal
-                    </button>
+                      <option value="7d">Últimos 7 dias</option>
+                      <option value="30d">Últimos 30 dias</option>
+                      <option value="90d">Últimos 90 dias</option>
+                    </select>
                   </div>
+                </div>
 
-                  <select
-                    value={periodFilter}
-                    onChange={(e) => setPeriodFilter(e.target.value)}
-                    className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#131a35] dark:focus:ring-[#6d7cef] cursor-pointer"
-                  >
-                    <option value="7d">Últimos 7 dias</option>
-                    <option value="30d">Últimos 30 dias</option>
-                    <option value="90d">Últimos 90 dias</option>
-                  </select>
+                {/* Legenda do heatmap */}
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded bg-gray-100 dark:bg-dark-700 mr-1"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">0</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900 mr-1"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Baixo</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded bg-green-300 dark:bg-green-700 mr-1"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Médio-baixo</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded bg-green-500 dark:bg-green-500 mr-1"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Médio</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded bg-green-700 dark:bg-green-300 mr-1"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Médio-alto</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 rounded bg-green-900 dark:bg-green-100 mr-1"></div>
+                    <span className="text-xs text-gray-600 dark:text-gray-300">Alto</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Legenda do heatmap */}
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded bg-gray-100 dark:bg-dark-700 mr-1"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">0</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900 mr-1"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">Baixo</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded bg-green-300 dark:bg-green-700 mr-1"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">Médio-baixo</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded bg-green-500 dark:bg-green-500 mr-1"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">Médio</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded bg-green-700 dark:bg-green-300 mr-1"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">Médio-alto</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 rounded bg-green-900 dark:bg-green-100 mr-1"></div>
-                  <span className="text-xs text-gray-600 dark:text-gray-300">Alto</span>
-                </div>
+              {/* Heatmap container */}
+              <div className="bg-white dark:bg-dark-800 rounded-xl p-4 md:p-6 shadow-lg border border-gray-100 dark:border-dark-700">
+                {activeTab === 'weekly' ? (
+                  <Heatmap 
+                    data={statsData.weekly} 
+                    periodLabel="Dia da Semana" 
+                    timeLabels={weeklyTimeLabels} 
+                  />
+                ) : (
+                  <Heatmap 
+                    data={statsData.monthly} 
+                    periodLabel="Semana do Mês" 
+                    timeLabels={monthlyTimeLabels} 
+                  />
+                )}
               </div>
-            </div>
-
-            {/* Heatmap container */}
-            <div className="bg-white dark:bg-dark-800 rounded-xl p-4 md:p-6 shadow-lg border border-gray-100 dark:border-dark-700">
-              {activeTab === 'weekly' ? (
-                <Heatmap 
-                  data={statsData.weekly} 
-                  periodLabel="Dia da Semana" 
-                  timeLabels={weeklyTimeLabels} 
-                />
-              ) : (
-                <Heatmap 
-                  data={statsData.monthly} 
-                  periodLabel="Semana do Mês" 
-                  timeLabels={monthlyTimeLabels} 
-                />
-              )}
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-dark-700 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center items-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              © {new Date().getFullYear()} - Todos os direitos reservados
-            </p>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 } 
