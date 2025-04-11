@@ -27,6 +27,8 @@ function UrlsContent() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [urlToDelete, setUrlToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  // Estado para controlar atualizações de visibilidade
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
@@ -73,6 +75,45 @@ function UrlsContent() {
       .catch(err => {
         console.error('Erro ao copiar:', err);
       });
+  };
+
+  // Alternar visibilidade (público/privado)
+  const toggleVisibility = async (url) => {
+    if (updating) return;
+    
+    try {
+      setUpdating(true);
+      const newVisibility = !url.isPublic;
+      
+      const response = await fetch(`/api/urls`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          urlCode: url.urlCode, 
+          isPublic: newVisibility 
+        }),
+      });
+      
+      if (response.ok) {
+        // Atualizar a lista local após a alteração bem-sucedida
+        const updatedUrls = urls.map(item => 
+          item.urlCode === url.urlCode 
+            ? { ...item, isPublic: newVisibility } 
+            : item
+        );
+        setUrls(updatedUrls);
+      } else {
+        console.error('Erro ao atualizar visibilidade:', response.status);
+        alert('Erro ao alterar a visibilidade da URL');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar visibilidade:', error);
+      alert('Erro ao alterar a visibilidade da URL');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   // Abrir modal de confirmação de exclusão
@@ -124,13 +165,12 @@ function UrlsContent() {
 
   return (
     <DashboardLayout title="Minhas URLs">
-      {/* Título da página */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
       </div>
 
       {/* Container principal */}
-      <div className="max-w-7xl mx-auto px-4 animate-fadeIn">
+      <div className="w-full mx-auto animate-fadeIn">
         {/* Cabeçalho com ações */}
         <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -207,6 +247,9 @@ function UrlsContent() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Cliques
                     </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      Visibilidade
+                    </th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       Ações
                     </th>
@@ -260,6 +303,19 @@ function UrlsContent() {
                         <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
                           {url.clicks || 0} cliques
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button 
+                          onClick={() => toggleVisibility(url)}
+                          disabled={updating}
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                            url.isPublic 
+                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800/40' 
+                              : 'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50'
+                          }`}
+                        >
+                          {url.isPublic ? 'Público' : 'Privado'}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">

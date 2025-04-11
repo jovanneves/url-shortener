@@ -144,7 +144,7 @@ export default function ManageUsers() {
   // Componente do cabeçalho
   const renderHeader = () => (
     <header className="flex justify-between items-center mb-8">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Gerenciar Usuários</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Gerênciar Contas</h1>
       <div className="flex items-center gap-3">
         <UserProfile />
       </div>
@@ -155,8 +155,8 @@ export default function ManageUsers() {
     <RequireAdmin>
       <div className="min-h-screen flex flex-col">
         <Head>
-          <title>Gerenciar Usuários | Encurtador de URL</title>
-          <meta name="description" content="Gerencie usuários da plataforma" />
+          <title>Gerênciar Contas | Encurtador de URL</title>
+          <meta name="description" content="Gerencie contas de usuários da plataforma" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         </Head>
 
@@ -204,7 +204,7 @@ export default function ManageUsers() {
                   <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
-                  Gerenciar Usuários
+                  Gerênciar Contas
                 </Link>
               )}
             </nav>
@@ -225,10 +225,47 @@ export default function ManageUsers() {
               )}
 
               {successMessage && (
-                <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200 rounded-md">
-                  {successMessage}
+                <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 mb-6">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-green-700 dark:text-green-200">{successMessage}</p>
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Adicionar seção de estatísticas */}
+              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
+                <div className="flex items-center">
+                  <div className="bg-[#131a35] dark:bg-[#6d7cef] p-3 rounded-lg mr-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">Gerênciar Contas</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      Visualize todas as contas de usuários
+                    </p>
+                  </div>
+                  <div className="ml-auto">
+                    <Link 
+                      href="/auth/profile"
+                      className="px-4 py-2 bg-[#131a35] dark:bg-[#6d7cef] text-white rounded-lg hover:bg-[#1a234a] dark:hover:bg-[#5a69d4] transition-colors text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Meu Perfil
+                    </Link>
+                  </div>
+                </div>
+              </div>
 
               {loading ? (
                 <div className="flex justify-center items-center py-12">

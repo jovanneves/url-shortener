@@ -292,7 +292,7 @@ function GlobalStatsContent() {
       </div>
 
       {/* Conteúdo principal (cabeçalho, cards, filtros, e heatmap) */}
-      <div className="max-w-7xl mx-auto px-4 animate-fadeIn">
+      <div className="w-full mx-auto animate-fadeIn">
         {/* Cabeçalho com ações */}
         <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

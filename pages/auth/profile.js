@@ -163,7 +163,7 @@ export default function Profile() {
             </div>
             {session.user.isAdmin && (
               <Link href="/admin/users" className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
-                Gerenciar Usuários
+                Gerênciar Contas
               </Link>
             )}
             <button 
@@ -241,7 +241,7 @@ export default function Profile() {
                   <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
-                  Gerenciar Usuários
+                  Gerenciar Contas
                 </Link>
               )}
             </nav>
@@ -272,6 +272,34 @@ export default function Profile() {
                   {success}
                 </div>
               )}
+
+              {/* Meu Perfil - Movido para cima */}
+              <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
+                <div className="flex items-center">
+                  <div className="bg-[#131a35] dark:bg-[#6d7cef] p-3 rounded-lg mr-4">
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-white">Meu Perfil</h2>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">
+                      Gerencie minha conta de usuário
+                    </p>
+                  </div>
+                  <div className="ml-auto">
+                    <Link 
+                      href="/admin/users"
+                      className="px-4 py-2 bg-[#131a35] dark:bg-[#6d7cef] text-white rounded-lg hover:bg-[#1a234a] dark:hover:bg-[#5a69d4] transition-colors text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      Gerenciar Contas
+                    </Link>
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Formulário de Perfil */}
