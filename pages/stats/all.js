@@ -156,167 +156,65 @@ function GlobalStatsContent() {
 
     // Função para gerar a classe de cor do heatmap com base no número de cliques
     const getHeatmapColor = (clicks) => {
-      if (clicks === 0) return {
-        bg: 'bg-gray-100 dark:bg-dark-700',
-        text: 'text-gray-500 dark:text-gray-400'
-      };
+      if (clicks === 0) return 'bg-gray-100 dark:bg-dark-700';
       
       const intensity = Math.min(1, clicks / maxClicks);
       
-      if (intensity < 0.2) return {
-        bg: 'bg-green-100 dark:bg-green-900/80',
-        text: 'text-green-800 dark:text-green-100'
-      };
-      if (intensity < 0.4) return {
-        bg: 'bg-green-200 dark:bg-green-800/80',
-        text: 'text-green-800 dark:text-green-100'
-      };
-      if (intensity < 0.6) return {
-        bg: 'bg-green-300 dark:bg-green-700/80',
-        text: 'text-green-800 dark:text-green-100'
-      };
-      if (intensity < 0.8) return {
-        bg: 'bg-green-500 dark:bg-green-600/80',
-        text: 'text-white'
-      };
-      return {
-        bg: 'bg-green-700 dark:bg-green-500/90', 
-        text: 'text-white'
-      };
+      if (intensity < 0.2) return 'bg-red-100 dark:bg-red-900/80';
+      if (intensity < 0.4) return 'bg-red-200 dark:bg-red-800/80';
+      if (intensity < 0.6) return 'bg-red-300 dark:bg-red-700/80';
+      if (intensity < 0.8) return 'bg-red-500 dark:bg-red-600/80';
+      return 'bg-red-700 dark:bg-red-500/90';
     };
 
-    // Calcular índices para informação de paginação
-    const allData = activeTab === 'weekly' ? statsData.weekly : statsData.monthly;
-    const indexOfFirstItem = (currentPage - 1) * itemsPerPage;
-    const indexOfLastItem = Math.min(currentPage * itemsPerPage, allData.length);
-
     return (
-      <div>
-        <div className="overflow-auto">
-          <table className="min-w-full border-separate border-spacing-0">
-            <thead>
-              <tr>
-                <th className="sticky left-0 z-10 bg-white dark:bg-dark-800 p-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-dark-700 whitespace-nowrap">
-                  URL
-                </th>
-                {timeLabels.map((label, index) => (
-                  <th key={index} className="p-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-dark-700 whitespace-nowrap">
-                    {label}
-                  </th>
-                ))}
-                <th className="p-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-dark-700 whitespace-nowrap">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-dark-700">
-              {data.map((url, urlIndex) => (
-                <tr 
-                  key={url.urlCode} 
-                  className={`hover:bg-gray-50 dark:hover:bg-dark-700 cursor-pointer transition-colors`}
-                  onClick={() => router.push(`/stats/${url.urlCode}`)}
-                >
-                  <td className="sticky left-0 z-10 bg-white dark:bg-dark-800 p-3 align-middle whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 flex-shrink-0 mr-3 rounded-md bg-[#131a35]/10 dark:bg-[#6d7cef]/20 flex items-center justify-center">
-                        <span className="text-xs font-bold text-[#131a35] dark:text-[#6d7cef]">
-                          {url.urlCode.substring(0, 2).toUpperCase()}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-sm text-gray-800 dark:text-white">
-                          {url.urlCode}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">
-                          {url.longUrl}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  
-                  {url.clicksData.map((period, periodIndex) => {
-                    const colorClasses = getHeatmapColor(period.count || 0);
-                    return (
-                      <td key={periodIndex} className="p-1.5 align-middle">
-                        <div 
-                          className={`h-12 rounded-md flex items-center justify-center transition-colors ${colorClasses.bg}`}
-                          title={`${period.count || 0} cliques`}
-                        >
-                          <span className={`text-sm font-medium ${colorClasses.text}`}>
-                            {period.count || 0}
-                          </span>
-                        </div>
-                      </td>
-                    );
-                  })}
-                  
-                  <td className="p-3 align-middle text-center">
-                    <div className="font-bold text-sm text-gray-800 dark:text-white">
-                      {url.totalClicks}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      cliques
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Paginação */}
-        {allData.length > itemsPerPage && (
-          <div className="bg-gray-50 dark:bg-dark-750 px-4 py-3 border-t border-gray-200 dark:border-dark-700 mt-4 rounded-b-xl">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{indexOfLastItem}</span> de <span className="font-medium">{allData.length}</span> resultados
-              </div>
-              <nav className="flex items-center space-x-2">
-                <button
-                  onClick={goToPreviousPage}
-                  disabled={currentPage === 1}
-                  className={`p-2 rounded-md border ${
-                    currentPage === 1
-                      ? 'border-gray-200 dark:border-dark-600 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                      : 'border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => paginate(i + 1)}
-                    className={`px-3.5 py-2 rounded-md border ${
-                      currentPage === i + 1
-                        ? 'bg-[#131a35] dark:bg-[#6d7cef] text-white border-[#131a35] dark:border-[#6d7cef]'
-                        : 'border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                
-                <button
-                  onClick={goToNextPage}
-                  disabled={currentPage === totalPages}
-                  className={`p-2 rounded-md border ${
-                    currentPage === totalPages
-                      ? 'border-gray-200 dark:border-dark-600 text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                      : 'border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </nav>
+      <div className="overflow-auto">
+        <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-1 min-w-max">
+          {/* Cabeçalho com dias da semana */}
+          <div className="w-48"></div>
+          {timeLabels.map((label, index) => (
+            <div key={index} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-2">
+              {label}
             </div>
-          </div>
-        )}
+          ))}
+          
+          {/* Linhas de dados */}
+          {data.map((url, urlIndex) => (
+            <>
+              {/* Célula da URL */}
+              <div className="w-48 p-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-l">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 flex-shrink-0 mr-3 rounded-md bg-[#131a35]/10 dark:bg-[#6d7cef]/20 flex items-center justify-center">
+                    <span className="text-xs font-bold text-[#131a35] dark:text-[#6d7cef]">
+                      {url.urlCode.substring(0, 2).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm text-gray-800 dark:text-white">
+                      {url.urlCode}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px]">
+                      {url.longUrl}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Células de cliques */}
+              {url.clicksData.map((period, periodIndex) => (
+                <div 
+                  key={periodIndex}
+                  className={`p-2 flex items-center justify-center border border-gray-200 dark:border-dark-700 ${getHeatmapColor(period.count || 0)} transition-all duration-200 hover:scale-105 hover:z-10 hover:shadow-lg`}
+                  title={`${period.count || 0} cliques`}
+                >
+                  <span className="text-sm font-medium text-white">
+                    {period.count || 0}
+                  </span>
+                </div>
+              ))}
+            </>
+          ))}
+        </div>
       </div>
     );
   };
@@ -538,23 +436,23 @@ function GlobalStatsContent() {
               <span className="text-xs text-gray-600 dark:text-gray-300">0</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-900 mr-1"></div>
+              <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900 mr-1"></div>
               <span className="text-xs text-gray-600 dark:text-gray-300">Baixo</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-green-300 dark:bg-green-700 mr-1"></div>
+              <div className="w-4 h-4 rounded bg-red-300 dark:bg-red-700 mr-1"></div>
               <span className="text-xs text-gray-600 dark:text-gray-300">Médio-baixo</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-green-500 dark:bg-green-500 mr-1"></div>
+              <div className="w-4 h-4 rounded bg-red-500 dark:bg-red-500 mr-1"></div>
               <span className="text-xs text-gray-600 dark:text-gray-300">Médio</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-green-700 dark:bg-green-300 mr-1"></div>
+              <div className="w-4 h-4 rounded bg-red-700 dark:bg-red-300 mr-1"></div>
               <span className="text-xs text-gray-600 dark:text-gray-300">Médio-alto</span>
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-green-900 dark:bg-green-100 mr-1"></div>
+              <div className="w-4 h-4 rounded bg-red-900 dark:bg-red-100 mr-1"></div>
               <span className="text-xs text-gray-600 dark:text-gray-300">Alto</span>
             </div>
           </div>
