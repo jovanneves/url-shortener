@@ -291,7 +291,7 @@ function UrlsContent() {
                 </thead>
                 <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-700">
                   {currentUrls.map((url) => (
-                    <tr key={url.urlCode} className="hover:bg-gray-50 dark:hover:bg-dark-750 transition-colors">
+                    <tr key={url.urlCode} className="hover:bg-[#131a35]/5 dark:hover:bg-[#6d7cef]/5 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 rounded-md bg-[#131a35]/10 dark:bg-[#6d7cef]/20 flex items-center justify-center">
