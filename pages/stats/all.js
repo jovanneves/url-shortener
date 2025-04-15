@@ -168,8 +168,8 @@ function GlobalStatsContent() {
     };
 
     return (
-      <div className="overflow-auto">
-        <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-1 min-w-max">
+      <div className="overflow-hidden">
+        <div className="grid grid-cols-[auto,repeat(7,1fr)] gap-1 w-full">
           {/* Cabeçalho com dias da semana */}
           <div className="w-48"></div>
           {timeLabels.map((label, index) => (
@@ -252,6 +252,11 @@ function GlobalStatsContent() {
     return result;
   }, []);
 
+  // Cálculo dos índices para exibição
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const totalItems = activeTab === 'weekly' ? statsData.weekly.length : statsData.monthly.length;
+
   if (loading) {
     return <LoadingState title="Estatísticas" />;
   }
@@ -264,7 +269,23 @@ function GlobalStatsContent() {
     <DashboardLayout title="Estatísticas">
       {/* Título da página */}
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Visualize os dados de todas as suas URLs encurtadas
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/?showAdd=true"
+            className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Nova URL
+          </Link>
+        </div>
       </div>
 
       {/* Conteúdo principal (cabeçalho, cards, filtros, e heatmap) */}
@@ -279,23 +300,74 @@ function GlobalStatsContent() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Estatísticas</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  Visualize os dados de todas as suas URLs encurtadas
+                <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Mapa de Calor de Cliques</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  As cores indicam a intensidade de cliques em cada período
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Link 
-                href="/?showAdd=true"
-                className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-dark-700">
+                <button
+                  onClick={() => setActiveTab('weekly')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    activeTab === 'weekly' 
+                      ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
+                      : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
+                  Semanal
+                </button>
+                <button
+                  onClick={() => setActiveTab('monthly')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    activeTab === 'monthly' 
+                      ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
+                      : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
+                  Mensal
+                </button>
+              </div>
+
+              <select
+                value={periodFilter}
+                onChange={(e) => setPeriodFilter(e.target.value)}
+                className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#131a35] dark:focus:ring-[#6d7cef] cursor-pointer"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Nova URL
-              </Link>
+                <option value="7d">Últimos 7 dias</option>
+                <option value="30d">Últimos 30 dias</option>
+                <option value="90d">Últimos 90 dias</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Legenda do heatmap */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded bg-gray-100 dark:bg-dark-700 mr-1"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">0</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900 mr-1"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Baixo</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded bg-red-300 dark:bg-red-700 mr-1"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Médio-baixo</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded bg-red-500 dark:bg-red-500 mr-1"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Médio</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded bg-red-700 dark:bg-red-300 mr-1"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Médio-alto</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded bg-red-900 dark:bg-red-100 mr-1"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Alto</span>
             </div>
           </div>
         </div>
@@ -383,81 +455,6 @@ function GlobalStatsContent() {
           </div>
         </div>
 
-        {/* Filtros e controles */}
-        <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-md border border-gray-100 dark:border-dark-700 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">Mapa de Calor de Cliques</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                As cores indicam a intensidade de cliques em cada período
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-dark-700">
-                <button
-                  onClick={() => setActiveTab('weekly')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    activeTab === 'weekly' 
-                      ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
-                      : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
-                  }`}
-                >
-                  Semanal
-                </button>
-                <button
-                  onClick={() => setActiveTab('monthly')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    activeTab === 'monthly' 
-                      ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]' 
-                      : 'bg-white text-gray-800 dark:bg-dark-800 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-700'
-                  }`}
-                >
-                  Mensal
-                </button>
-              </div>
-
-              <select
-                value={periodFilter}
-                onChange={(e) => setPeriodFilter(e.target.value)}
-                className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-sm text-gray-800 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#131a35] dark:focus:ring-[#6d7cef] cursor-pointer"
-              >
-                <option value="7d">Últimos 7 dias</option>
-                <option value="30d">Últimos 30 dias</option>
-                <option value="90d">Últimos 90 dias</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Legenda do heatmap */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-gray-100 dark:bg-dark-700 mr-1"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">0</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-900 mr-1"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Baixo</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-red-300 dark:bg-red-700 mr-1"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Médio-baixo</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-red-500 dark:bg-red-500 mr-1"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Médio</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-red-700 dark:bg-red-300 mr-1"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Médio-alto</span>
-            </div>
-            <div className="flex items-center">
-              <div className="w-4 h-4 rounded bg-red-900 dark:bg-red-100 mr-1"></div>
-              <span className="text-xs text-gray-600 dark:text-gray-300">Alto</span>
-            </div>
-          </div>
-        </div>
-
         {/* Heatmap container */}
         <div className="bg-white dark:bg-dark-800 rounded-xl p-4 md:p-6 shadow-lg border border-gray-100 dark:border-dark-700">
           {activeTab === 'weekly' ? (
@@ -474,6 +471,50 @@ function GlobalStatsContent() {
             />
           )}
         </div>
+
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-between">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Mostrando {indexOfFirstItem + 1} a {Math.min(indexOfLastItem, totalItems)} de {totalItems} URLs
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-200 dark:border-dark-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => paginate(page)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium ${
+                      currentPage === page
+                        ? 'bg-[#131a35] text-white dark:bg-[#6d7cef]'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-700'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-200 dark:border-dark-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
