@@ -40,19 +40,27 @@ function UrlsContent() {
   const [isPublic, setIsPublic] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [urlFilter, setUrlFilter] = useState('all');
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
     setBaseUrl(window.location.origin);
   }, []);
 
+  const filteredUrls = urls.filter(url => {
+    if (urlFilter === 'all') return true;
+    if (urlFilter === 'mine') return url.userId === session?.user?.id;
+    if (urlFilter === 'others') return url.userId !== session?.user?.id;
+    return true;
+  });
+
   // Calcular índices dos itens a exibir na página atual
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUrls = urls.slice(indexOfFirstItem, indexOfLastItem);
+  const currentUrls = filteredUrls.slice(indexOfFirstItem, indexOfLastItem);
   
   // Calcular número total de páginas
-  const totalPages = Math.ceil(urls.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredUrls.length / itemsPerPage);
   
   // Função para mudar de página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -166,30 +174,41 @@ function UrlsContent() {
     
     try {
       setDeleting(true);
-      const response = await fetch(`/api/urls/${urlToDelete.urlCode}`, {
+      const response = await fetch('/api/urls', {
         method: 'DELETE',
-        credentials: 'include', // Envia cookies de autenticação com a requisição
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ urlCode: urlToDelete.urlCode })
       });
       
       if (response.ok) {
         // Atualizar a lista após exclusão bem-sucedida
-        const updatedUrls = urls.filter(url => url.urlCode !== urlToDelete.urlCode);
-        setUrls(updatedUrls);
-        setShowDeleteModal(false);
+        setUrls(prevUrls => prevUrls.filter(url => url.urlCode !== urlToDelete.urlCode));
         
         // Ajustar a página atual se necessário após a exclusão
         if (currentUrls.length === 1 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
+          setCurrentPage(prevPage => prevPage - 1);
         }
       } else {
+        // Verificar se a resposta é JSON
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const data = await response.json();
+            console.error('Erro ao excluir URL:', data.error);
+          } catch (e) {
+            console.error('Erro ao processar resposta JSON:', e);
+          }
+        }
         console.error('Erro ao excluir URL:', response.status);
-        alert('Erro ao excluir a URL');
       }
     } catch (error) {
       console.error('Erro ao excluir URL:', error);
-      alert('Erro ao excluir a URL');
     } finally {
       setDeleting(false);
+      setShowDeleteModal(false);
       setUrlToDelete(null);
     }
   };
@@ -299,7 +318,7 @@ function UrlsContent() {
         </div>
       </div>
 
-      {/* Container principal */}
+      {/* Conteúdo principal */}
       <div className="w-full mx-auto animate-fadeIn">
         {/* Cabeçalho com ações */}
         <div className="bg-white dark:bg-dark-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-dark-700 mb-6 transition-all hover:shadow-xl">
@@ -318,7 +337,43 @@ function UrlsContent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center space-x-4 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-2">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="urlFilter"
+                    value="all"
+                    checked={urlFilter === 'all'}
+                    onChange={() => setUrlFilter('all')}
+                    className="form-radio h-4 w-4 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef]"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Todas</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="urlFilter"
+                    value="mine"
+                    checked={urlFilter === 'mine'}
+                    onChange={() => setUrlFilter('mine')}
+                    className="form-radio h-4 w-4 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef]"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Minhas URLs</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="urlFilter"
+                    value="others"
+                    checked={urlFilter === 'others'}
+                    onChange={() => setUrlFilter('others')}
+                    className="form-radio h-4 w-4 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef]"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Outras URLs</span>
+                </label>
+              </div>
+
               <Link 
                 href="/stats/all"
                 className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
@@ -333,7 +388,7 @@ function UrlsContent() {
         </div>
 
         {/* Lista de URLs */}
-        {urls.length === 0 ? (
+        {filteredUrls.length === 0 ? (
           <div className="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-md border border-gray-100 dark:border-dark-700 flex flex-col items-center justify-center text-center">
             <svg className="w-16 h-16 text-gray-400 dark:text-dark-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -343,7 +398,7 @@ function UrlsContent() {
               Você ainda não criou nenhuma URL encurtada.
             </p>
             <Link 
-              href="/"
+              href="/?showAdd=true"
               className="px-4 py-2 bg-[#131a35] dark:bg-[#6d7cef] text-white rounded-lg hover:bg-[#1a234a] dark:hover:bg-[#5a69d4] transition-colors text-sm font-medium"
             >
               Criar primeira URL
@@ -414,12 +469,12 @@ function UrlsContent() {
                       <td className="px-6 py-4 whitespace-nowrap w-1/5">
                         <button 
                           onClick={() => toggleVisibility(url)}
-                          disabled={updating}
+                          disabled={updating || url.userId !== session?.user?.id}
                           className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors inline-flex items-center ${
                             url.isPublic 
                               ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800/40' 
                               : 'bg-gray-100 dark:bg-gray-800/50 text-gray-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50'
-                          }`}
+                          } ${url.userId !== session?.user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           {url.isPublic ? (
                             <>
@@ -467,24 +522,28 @@ function UrlsContent() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                           </Link>
-                          <button
-                            onClick={() => openEditModal(url)}
-                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20"
-                            title="Editar URL"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <button 
-                            onClick={() => confirmDelete(url)}
-                            className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-                            title="Excluir URL"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          {url.userId === session?.user?.id && (
+                            <>
+                              <button
+                                onClick={() => openEditModal(url)}
+                                className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20"
+                                title="Editar URL"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button 
+                                onClick={() => confirmDelete(url)}
+                                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                                title="Excluir URL"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
