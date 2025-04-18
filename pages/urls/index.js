@@ -41,6 +41,7 @@ function UrlsContent() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
   const [urlFilter, setUrlFilter] = useState('all');
+  const [copiedUrl, setCopiedUrl] = useState(null);
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
@@ -110,16 +111,14 @@ function UrlsContent() {
     fetchUrls();
   }, []);
 
-  // Copiar link para a área de transferência
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text)
-      .then(() => {
-        // Feedback visual temporário (pode ser melhorado com um toast)
-        alert('Link copiado para a área de transferência!');
-      })
-      .catch(err => {
-        console.error('Erro ao copiar:', err);
-      });
+  const copyToClipboard = async (text, urlCode) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedUrl(urlCode);
+      setTimeout(() => setCopiedUrl(null), 2000); // Remove o feedback após 2 segundos
+    } catch (err) {
+      console.error('Erro ao copiar:', err);
+    }
   };
 
   // Alternar visibilidade (público/privado)
@@ -443,7 +442,7 @@ function UrlsContent() {
                             </div>
                             <div 
                               className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1" 
-                              onClick={() => copyToClipboard(`${baseUrl}/${url.urlCode}`)}
+                              onClick={() => copyToClipboard(`${baseUrl}/${url.urlCode}`, url.urlCode)}
                             >
                               <span>{baseUrl}/{url.urlCode}</span>
                             </div>
@@ -505,12 +504,18 @@ function UrlsContent() {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-1/5">
                         <div className="flex justify-end space-x-2">
                           <button 
-                            onClick={() => copyToClipboard(`${baseUrl}/${url.urlCode}`)}
-                            className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                            title="Copiar link"
+                            onClick={() => copyToClipboard(`${baseUrl}/${url.urlCode}`, url.urlCode)}
+                            className={`text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1.5 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors ${
+                              copiedUrl === url.urlCode ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400' : ''
+                            }`}
+                            title={copiedUrl === url.urlCode ? 'Copiado!' : 'Copiar link'}
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                              {copiedUrl === url.urlCode ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                              )}
                             </svg>
                           </button>
                           <Link 
