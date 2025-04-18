@@ -33,6 +33,16 @@ export default function Home() {
     }
   }, [router.query, showAddForm, success]);
 
+  useEffect(() => {
+    // Define a URL base apenas quando executado no navegador
+    setBaseUrl(window.location.origin);
+    
+    // Verifica se deve mostrar o modal de adição
+    if (router.query.showAdd === 'true') {
+      setShowAddForm(true);
+    }
+  }, [router.query]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -201,14 +211,18 @@ export default function Home() {
     }
   };
 
+  const handleCancel = () => {
+    setShowAddForm(false);
+    // Remove o parâmetro showAdd da URL
+    router.replace('/', undefined, { shallow: true });
+  };
+
+  // Limpar o parâmetro showAdd quando o modal for fechado
   useEffect(() => {
-    // Verificar se estamos no navegador antes de acessar window
-    if (typeof window !== 'undefined') {
-      const protocol = window.location.protocol;
-      const host = window.location.host;
-      setBaseUrl(`${protocol}//${host}`);
+    if (!showAddForm && router.query.showAdd === 'true') {
+      router.replace('/', undefined, { shallow: true });
     }
-  }, []);
+  }, [showAddForm, router.query]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-950">
@@ -274,9 +288,6 @@ export default function Home() {
                 <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-gray-800 dark:text-white">
                   Encurte suas URLs
                 </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  Transforme links longos em URLs curtas e fáceis de compartilhar
-                </p>
               </div>
               
               {/* Componentes interativos */}
@@ -360,11 +371,23 @@ export default function Home() {
                 {/* Form */}
                 {showAddForm && (
                   <div className="bg-white dark:bg-dark-800 rounded-xl p-8 border border-gray-200 dark:border-dark-600 shadow-md">
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">Criar nova URL encurtada</h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Criar nova URL encurtada</h3>
+                      <button
+                        onClick={handleCancel}
+                        className="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                        aria-label="Fechar"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="relative">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="longUrl">
                           URL original
+                          <span className="text-red-500 ml-1">*</span>
                         </label>
                         <div className="flex shadow-sm rounded-md">
                           <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 sm:text-sm">
@@ -380,14 +403,22 @@ export default function Home() {
                             value={longUrl}
                             onChange={(e) => setLongUrl(e.target.value)}
                             required
+                            pattern="https?://.+"
+                            title="Digite uma URL válida começando com http:// ou https://"
                             className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] text-base border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
                           />
                         </div>
+                        {!longUrl && (
+                          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                            A URL original é obrigatória
+                          </p>
+                        )}
                       </div>
                       
                       <div className="relative">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="alias">
-                          Apelido personalizado (opcional)
+                          Apelido personalizado
+                          <span className="text-gray-400 ml-1">(opcional)</span>
                         </label>
                         <div className="flex shadow-sm rounded-md">
                           <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 text-sm">
@@ -399,10 +430,17 @@ export default function Home() {
                             placeholder="meu-link"
                             value={alias}
                             onChange={(e) => setAlias(e.target.value)}
+                            pattern="^[a-zA-Z0-9-_]+$"
+                            title="Use apenas letras, números, hífens e sublinhados"
                             className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] text-base border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
                           />
                         </div>
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Use apenas letras, números, hífens e sublinhados.</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Use apenas letras, números, hífens e sublinhados
+                        </p>
                       </div>
                       
                       {/* Campo de visibilidade - mostrado apenas para usuários logados */}
@@ -410,35 +448,36 @@ export default function Home() {
                         <div className="relative">
                           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                             Visibilidade da URL
+                            <span className="text-gray-400 ml-1">(opcional)</span>
                           </label>
-                          <div className="flex space-x-4">
-                            <div className="flex items-center">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-start p-4 rounded-lg border border-gray-200 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors cursor-pointer" onClick={() => setIsPublic(true)}>
                               <input
                                 id="public"
                                 name="visibility"
                                 type="radio"
                                 checked={isPublic}
                                 onChange={() => setIsPublic(true)}
-                                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                className="h-4 w-4 mt-1 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef] border-gray-300 dark:border-dark-600"
                               />
-                              <label htmlFor="public" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                Pública
+                              <label htmlFor="public" className="ml-3 block">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pública</span>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   Qualquer pessoa pode acessar e ver as estatísticas
                                 </p>
                               </label>
                             </div>
-                            <div className="flex items-center">
+                            <div className="flex items-start p-4 rounded-lg border border-gray-200 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors cursor-pointer" onClick={() => setIsPublic(false)}>
                               <input
                                 id="private"
                                 name="visibility"
                                 type="radio"
                                 checked={!isPublic}
                                 onChange={() => setIsPublic(false)}
-                                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                className="h-4 w-4 mt-1 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef] border-gray-300 dark:border-dark-600"
                               />
-                              <label htmlFor="private" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                                Privada
+                              <label htmlFor="private" className="ml-3 block">
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Privada</span>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   Apenas você pode ver as estatísticas
                                 </p>
@@ -448,18 +487,38 @@ export default function Home() {
                         </div>
                       )}
                       
+                      {error && (
+                        <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+                          <div className="flex">
+                            <div className="flex-shrink-0">
+                              <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                            </div>
+                            <div className="ml-3">
+                              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                                Erro ao encurtar URL
+                              </h3>
+                              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                                {error}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex justify-end gap-4 pt-4">
                         <button 
                           type="button" 
-                          onClick={() => setShowAddForm(false)}
-                          className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-dark-700 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-dark-600 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35]"
+                          onClick={handleCancel}
+                          className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-dark-700 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-dark-600 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35] transition-colors"
                         >
                           Cancelar
                         </button>
                         <button 
                           type="submit" 
                           disabled={loading || !longUrl} 
-                          className="px-6 py-3 bg-[#131a35] hover:bg-[#1a234a] text-white rounded-md shadow-sm font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35] disabled:opacity-60 disabled:cursor-not-allowed flex items-center"
+                          className="px-6 py-3 bg-[#131a35] hover:bg-[#1a234a] text-white rounded-md shadow-sm font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35] disabled:opacity-60 disabled:cursor-not-allowed flex items-center transition-colors"
                         >
                           {loading ? (
                             <>

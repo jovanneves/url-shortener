@@ -32,6 +32,14 @@ function UrlsContent() {
   // Estados para paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  // Estados para o modal de edição
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [urlToEdit, setUrlToEdit] = useState(null);
+  const [newUrlCode, setNewUrlCode] = useState('');
+  const [newLongUrl, setNewLongUrl] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   useEffect(() => {
     // Define a URL base apenas quando executado no navegador
@@ -192,6 +200,75 @@ function UrlsContent() {
     setUrlToDelete(null);
   };
 
+  // Função para abrir o modal de edição
+  const openEditModal = (url) => {
+    setUrlToEdit(url);
+    setNewUrlCode(url.urlCode);
+    setNewLongUrl(url.longUrl);
+    setIsPublic(url.isPublic);
+    setShowEditModal(true);
+  };
+
+  // Função para fechar o modal de edição
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setUrlToEdit(null);
+    setNewUrlCode('');
+    setNewLongUrl('');
+    setIsPublic(true);
+    setSaving(false);
+    setSaveError('');
+  };
+
+  // No modal de edição, ajustar o botão Cancelar
+  const handleCancel = () => {
+    closeEditModal();
+    router.push('/urls');
+  };
+
+  // Função para salvar as alterações
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setSaveError('');
+
+    try {
+      const response = await fetch('/api/edit-url', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          oldUrlCode: urlToEdit.urlCode,
+          newUrlCode: newUrlCode.trim(),
+          longUrl: newLongUrl.trim(),
+          isPublic
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erro ao salvar alterações');
+      }
+
+      // Atualizar a lista de URLs
+      const updatedUrls = urls.map(url => 
+        url.urlCode === urlToEdit.urlCode 
+          ? { ...url, urlCode: newUrlCode.trim(), longUrl: newLongUrl.trim(), isPublic }
+          : url
+      );
+      setUrls(updatedUrls);
+      closeEditModal();
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      setSaveError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return <LoadingState title="Minhas URLs" />;
   }
@@ -203,7 +280,23 @@ function UrlsContent() {
   return (
     <DashboardLayout title="Minhas URLs">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Minhas URLs</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Gerencie todas as suas URLs encurtadas
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/?showAdd=true"
+            className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Nova URL
+          </Link>
+        </div>
       </div>
 
       {/* Container principal */}
@@ -226,16 +319,6 @@ function UrlsContent() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link 
-                href="/?showAdd=true"
-                className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Nova URL
-              </Link>
-              
               <Link 
                 href="/stats/all"
                 className="px-4 py-2 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 text-sm"
@@ -272,19 +355,19 @@ function UrlsContent() {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
                 <thead className="bg-gray-50 dark:bg-dark-750">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/5">
                       URL Código
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-2/5">
                       URL Original
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/5">
                       Visibilidade
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/5">
                       Criada em
                     </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-1/5">
                       Ações
                     </th>
                   </tr>
@@ -292,7 +375,7 @@ function UrlsContent() {
                 <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-700">
                   {currentUrls.map((url) => (
                     <tr key={url.urlCode} className="hover:bg-[#131a35]/5 dark:hover:bg-[#6d7cef]/5 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap w-1/5">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 rounded-md bg-[#131a35]/10 dark:bg-[#6d7cef]/20 flex items-center justify-center">
                             <span className="text-sm font-bold text-[#131a35] dark:text-[#6d7cef]">
@@ -312,7 +395,7 @@ function UrlsContent() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 w-2/5">
                         <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate">
                           {url.longUrl}
                         </div>
@@ -328,7 +411,7 @@ function UrlsContent() {
                           </svg>
                         </a>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap w-1/5">
                         <button 
                           onClick={() => toggleVisibility(url)}
                           disabled={updating}
@@ -356,7 +439,7 @@ function UrlsContent() {
                           )}
                         </button>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap w-1/5">
                         <div className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(url.createdAt).toLocaleDateString('pt-BR')}
                         </div>
@@ -364,7 +447,7 @@ function UrlsContent() {
                           {new Date(url.createdAt).toLocaleTimeString('pt-BR')}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-1/5">
                         <div className="flex justify-end space-x-2">
                           <button 
                             onClick={() => copyToClipboard(`${baseUrl}/${url.urlCode}`)}
@@ -384,6 +467,15 @@ function UrlsContent() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                           </Link>
+                          <button
+                            onClick={() => openEditModal(url)}
+                            className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1.5 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20"
+                            title="Editar URL"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
                           <button 
                             onClick={() => confirmDelete(url)}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -468,7 +560,7 @@ function UrlsContent() {
             {/* Center modal */}
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             
-            <div className="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
               <div className="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
@@ -507,6 +599,181 @@ function UrlsContent() {
                 >
                   Cancelar
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 dark:bg-gray-800 bg-opacity-75 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            
+            <div className="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+              <div className="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                    <div className="bg-white dark:bg-dark-800 rounded-xl p-8 border border-gray-200 dark:border-dark-600 shadow-md">
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">Editar URL encurtada</h3>
+                      <form onSubmit={handleEditSubmit} className="space-y-6">
+                        <div className="relative">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="editLongUrl">
+                            URL original
+                            <span className="text-red-500 ml-1">*</span>
+                          </label>
+                          <div className="flex shadow-sm rounded-md">
+                            <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 sm:text-sm">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                              </svg>
+                            </span>
+                            <input
+                              id="editLongUrl"
+                              type="url"
+                              placeholder="https://exemplo.com/pagina-com-url-muito-longa..."
+                              value={newLongUrl}
+                              onChange={(e) => setNewLongUrl(e.target.value)}
+                              required
+                              pattern="https?://.+"
+                              title="Digite uma URL válida começando com http:// ou https://"
+                              className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] text-base border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
+                            />
+                          </div>
+                          {!newLongUrl && (
+                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                              A URL original é obrigatória
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="relative">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="editUrlCode">
+                            Apelido personalizado
+                            <span className="text-gray-400 ml-1">(opcional)</span>
+                          </label>
+                          <div className="flex shadow-sm rounded-md">
+                            <span className="inline-flex items-center px-4 rounded-l-md border border-r-0 border-gray-300 dark:border-dark-600 bg-gray-100 dark:bg-dark-700 text-gray-600 dark:text-gray-400 text-sm">
+                              {baseUrl}/
+                            </span>
+                            <input
+                              id="editUrlCode"
+                              type="text"
+                              placeholder="meu-link"
+                              value={newUrlCode}
+                              onChange={(e) => setNewUrlCode(e.target.value)}
+                              pattern="^[a-zA-Z0-9-_]+$"
+                              title="Use apenas letras, números, hífens e sublinhados"
+                              className="flex-1 min-w-0 block w-full px-4 py-3 rounded-none rounded-r-md focus:ring-2 focus:ring-[#131a35] focus:border-[#131a35] text-base border border-gray-300 dark:border-dark-600 bg-gray-50 dark:bg-dark-800 text-gray-800 dark:text-white"
+                            />
+                          </div>
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Use apenas letras, números, hífens e sublinhados
+                          </p>
+                        </div>
+
+                        {/* Campo de visibilidade - mostrado apenas para usuários logados */}
+                        {session?.user && (
+                          <div className="relative">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                              Visibilidade da URL
+                              <span className="text-gray-400 ml-1">(opcional)</span>
+                            </label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="flex items-start p-4 rounded-lg border border-gray-200 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors cursor-pointer" onClick={() => setIsPublic(true)}>
+                                <input
+                                  id="public"
+                                  name="visibility"
+                                  type="radio"
+                                  checked={isPublic}
+                                  onChange={() => setIsPublic(true)}
+                                  className="h-4 w-4 mt-1 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef] border-gray-300 dark:border-dark-600"
+                                />
+                                <label htmlFor="public" className="ml-3 block">
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pública</span>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Qualquer pessoa pode acessar e ver as estatísticas
+                                  </p>
+                                </label>
+                              </div>
+                              <div className="flex items-start p-4 rounded-lg border border-gray-200 dark:border-dark-600 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors cursor-pointer" onClick={() => setIsPublic(false)}>
+                                <input
+                                  id="private"
+                                  name="visibility"
+                                  type="radio"
+                                  checked={!isPublic}
+                                  onChange={() => setIsPublic(false)}
+                                  className="h-4 w-4 mt-1 text-[#131a35] dark:text-[#6d7cef] focus:ring-[#131a35] dark:focus:ring-[#6d7cef] border-gray-300 dark:border-dark-600"
+                                />
+                                <label htmlFor="private" className="ml-3 block">
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Privada</span>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Apenas você pode ver as estatísticas
+                                  </p>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {saveError && (
+                          <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+                            <div className="flex">
+                              <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                              </div>
+                              <div className="ml-3">
+                                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                                  Erro ao salvar
+                                </h3>
+                                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                                  {saveError}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex justify-end gap-4 pt-4">
+                          <button 
+                            type="button" 
+                            onClick={handleCancel}
+                            disabled={saving}
+                            className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-dark-700 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-dark-600 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35] transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button 
+                            type="submit" 
+                            disabled={saving || !newLongUrl} 
+                            className="px-6 py-3 bg-[#131a35] hover:bg-[#1a234a] text-white rounded-md shadow-sm font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#131a35] disabled:opacity-60 disabled:cursor-not-allowed flex items-center transition-colors"
+                          >
+                            {saving ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processando...
+                              </>
+                            ) : (
+                              "Salvar Alterações"
+                            )}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
