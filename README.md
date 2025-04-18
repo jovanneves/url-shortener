@@ -2,6 +2,19 @@
 
 Aplicação de encurtamento de URLs com painel de controle para administradores e usuários.
 
+## Funcionalidades
+
+- Encurtamento de URLs com código personalizado
+- Painel de controle para usuários e administradores
+- Estatísticas de acesso às URLs
+- URLs públicas e privadas
+- Sistema de cache com Redis
+- Interface responsiva e moderna
+- Feedback visual para ações do usuário
+- Filtros para visualização de URLs
+- Paginação de resultados
+- Modo escuro/claro
+
 ## Executando com Docker
 
 A maneira mais simples de executar esta aplicação é usando Docker e docker-compose. Siga os passos abaixo:
@@ -57,12 +70,24 @@ Após fazer essa configuração, reinicie os containers (se necessário) e acess
 http://urlshortener
 ```
 
-### Nginx como Proxy Reverso
+## Tecnologias Utilizadas
 
-A aplicação utiliza o Nginx como proxy reverso, oferecendo as seguintes vantagens:
-- **Segurança**: O Nginx atua como uma camada adicional de proteção
-- **Performance**: Cache de conteúdo estático e compressão gzip
-- **Escalabilidade**: Facilita a expansão do sistema no futuro
+- **Frontend:**
+  - Next.js 15.2.4
+  - React 19.1.0
+  - TailwindCSS 3.3.3
+  - ESLint para qualidade de código
+
+- **Backend:**
+  - Next.js API Routes
+  - MongoDB 6.15.0
+  - Redis 4.7.0
+  - NextAuth.js 4.24.11
+
+- **Infraestrutura:**
+  - Docker
+  - Docker Compose
+  - Nginx
 
 ## Acesso Inicial
 
@@ -95,234 +120,43 @@ ADMIN_PASSWORD=sua_senha
 ADMIN_EMAIL=seu.email@dominio.com ADMIN_PASSWORD=sua_senha docker-compose up -d
 ```
 
-## Inicialização Automatizada
-
-A aplicação está configurada com um processo de inicialização automatizado que:
-
-1. Aguarda o MongoDB ficar disponível
-2. Executa o script de criação do usuário administrador
-3. Inicia a aplicação Next.js
-
-Este processo é controlado pelos seguintes arquivos:
-
-- `init-admin.js`: Script que verifica se já existe um usuário administrador e, caso não exista, cria um novo
-- `docker-entrypoint.sh`: Script de inicialização que orquestra o processo
-- `Dockerfile`: Configurado para usar o script de inicialização como ponto de entrada
-
 ## Desenvolvimento
 
-Para executar a aplicação em modo de desenvolvimento:
+Para desenvolvimento local, siga os passos:
 
-```bash
-npm install
-npm run dev
-```
-
-## Tecnologias Utilizadas
-
-- Next.js
-- MongoDB
-- Redis
-- NextAuth.js
-- TailwindCSS
-- Chart.js (para visualização de estatísticas)
-- Docker e Docker Compose
-- Nginx
-
-## Características
-
-- Encurtamento de URLs longas
-- Contador de cliques para cada URL encurtada
-- Histórico detalhado de estatísticas para cada URL
-- Interface moderna e responsiva
-- Armazenamento em MongoDB
-- Criação automatizada de usuário administrador na primeira execução
-- Sistema de autenticação completo (registro, login, recuperação de senha)
-- Painel administrativo para gerenciamento de usuários
-- Opções de visibilidade: URLs públicas e privadas
-- Filtros de visualização: Todas as URLs, Minhas URLs, URLs Públicas
-- Função de cópia para área de transferência com feedback visual
-- Funcionalidade de edição de URLs existentes
-- Cache com Redis para melhorar a performance
-
-## Funcionalidades Principais
-
-### Gerenciamento de URLs
-- Criação de URLs encurtadas com alias personalizados
-- Configuração de visibilidade (pública/privada) para cada URL
-- Edição de URLs existentes (alias, URL original e visibilidade)
-- Exclusão de URLs
-
-### Estatísticas
-- Contagem total de cliques
-- Histórico diário de acessos
-- Gráficos de visualização de tendências
-
-### Painel de Controle
-- Filtros para visualização de URLs (Todas, Minhas, Públicas)
-- Pesquisa por URL ou alias
-- Ordenação por data, cliques ou código
-- Paginação para facilitar a navegação
-
-### Administração
-- Gerenciamento completo de usuários
-- Visualização de todas as URLs no sistema
-- Capacidade de editar ou excluir URLs de qualquer usuário
-
-### Segurança
-- Proteção de URLs privadas (apenas o proprietário pode ver estatísticas)
-- Autenticação via NextAuth
-- Validação de formulários
-- Sanitização de entradas
-
-## Requisitos
-
-- Node.js 14.x ou superior
-- Docker e Docker Compose (opcional para desenvolvimento)
-- MongoDB (obrigatório)
-- Redis (opcional para desenvolvimento)
-
-## Redis (Opcional para Desenvolvimento)
-
-Durante o desenvolvimento, o Redis é tratado como uma dependência opcional:
-- Se o Redis não estiver disponível, a aplicação continuará funcionando normalmente
-- Após 3 tentativas de conexão sem sucesso, o Redis será desativado automaticamente
-- O cache será desativado, mas todas as outras funcionalidades continuarão operando
-- Em produção, recomenda-se manter o Redis ativo para melhor performance
-
-Para desenvolvimento local sem Redis:
-1. A aplicação detectará automaticamente a ausência do Redis
-2. Continuará funcionando normalmente, apenas sem cache
-3. Não é necessário nenhuma configuração adicional
-
-## Instalação
-
-1. Clone o repositório
-```bash
-git clone <seu-repositorio>
-cd url-shortener
-```
-
-2. Instale as dependências
+1. Instale as dependências:
 ```bash
 npm install
 ```
 
-3. Inicie o MongoDB usando Docker
+2. Configure as variáveis de ambiente:
 ```bash
-docker-compose up -d
+cp .env.example .env
 ```
 
-4. Execute o aplicativo em modo de desenvolvimento
+3. Inicie o servidor de desenvolvimento:
 ```bash
 npm run dev
 ```
 
-5. Acesse a aplicação em `http://localhost:3000`
-
-## Uso
-
-1. Digite ou cole uma URL longa no campo de entrada
-2. Clique no botão "Encurtar URL"
-3. A URL encurtada será exibida, pronta para ser copiada e compartilhada
-
-## Estrutura do Projeto
-
-- `pages/` - Páginas da aplicação (Next.js)
-  - `pages/api/` - Endpoints da API
-  - `pages/auth/` - Páginas de autenticação
-  - `pages/admin/` - Painel administrativo
-  - `pages/stats/` - Visualização de estatísticas de URLs
-  - `pages/urls/` - Gerenciamento de URLs
-- `components/` - Componentes reutilizáveis
-- `models/` - Modelos Mongoose
-- `lib/` - Utilitários, conexão com banco de dados e Redis
-- `public/` - Arquivos estáticos
-- `styles/` - Estilos CSS
-- `init-admin.js` - Script para inicialização do usuário admin
-- `docker-entrypoint.sh` - Script de inicialização para o container Docker
-
-## Arquivos de Configuração
-
-- `Dockerfile` - Configuração para build da imagem Docker
-- `docker-compose.yml` - Configuração dos serviços Docker (app e MongoDB)
-- `.env.example` - Exemplo de variáveis de ambiente necessárias
-
-## Variáveis de Ambiente
-
-As seguintes variáveis de ambiente podem ser configuradas:
-
-```
-# MongoDB
-MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin
-
-# Redis
-REDIS_URI=redis://redis:6379
-
-# NextAuth
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your_nextauth_secret_key
-
-# App Config
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Admin User (primeira execução)
-ADMIN_EMAIL=admin@sistema.com
-ADMIN_PASSWORD=@dm1n
+4. Execute os testes:
+```bash
+npm test
 ```
 
-## Ambientes
+5. Lint do código:
+```bash
+npm run lint
+```
 
-- Desenvolvimento: `npm run dev`
-- Produção: `npm run build && npm start`
+## Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
 ## Licença
 
-ISC 
-
-## Suporte a Múltiplos Domínios
-
-A aplicação agora suporta o uso de múltiplos domínios para encurtar URLs. Isso permite que você tenha conjuntos de URLs distintos para diferentes domínios, mesmo que o código curto seja o mesmo.
-
-### Configuração
-
-1.  **Arquivo hosts**: Adicione entradas para todos os domínios que deseja usar. Exemplo:
-    ```
-    127.0.0.1 urlshortener
-    127.0.0.1 go
-    ```
-    Consulte a seção "Configuração do Domínio Local" para instruções sobre como editar este arquivo.
-
-2.  **`next.config.js`**: Adicione os domínios extras na configuração `images.domains`:
-    ```javascript
-    // next.config.js
-    images: {
-      domains: ['localhost', 'urlshortener', 'go'], // Adicione seus domínios aqui
-    },
-    ```
-
-3.  **`nginx.conf`** (se estiver usando Nginx): Adicione um novo bloco `server` para cada domínio adicional. Copie a estrutura do bloco existente para `urlshortener` e altere o `server_name`:
-    ```nginx
-    # nginx.conf
-    server {
-        listen 80;
-        server_name go; # Altere para o seu domínio adicional
-
-        # Mantenha as configurações de proxy e cache iguais ao bloco do urlshortener
-        location / {
-            proxy_pass http://app:3000;
-            # ... outras diretivas proxy ...
-        }
-        # ... outras locations ...
-    }
-    ```
-
-4.  **Reiniciar serviços**: Após as alterações, reinicie o Nginx (se aplicável) e a aplicação Next.js para que as novas configurações entrem em vigor.
-
-### Como Funciona
-
-- Quando uma URL é criada ou acessada, a aplicação identifica o domínio através do cabeçalho `Host` da requisição.
-- URLs são armazenadas no banco de dados com uma referência ao domínio ao qual pertencem.
-- O cache do Redis também utiliza o domínio como parte da chave, garantindo que o cache de um domínio não interfira no outro.
-
-Isso permite, por exemplo, que `http://urlshortener/meucodigo` e `http://go/meucodigo` apontem para URLs longas diferentes. 
+Este projeto está licenciado sob a licença ISC. 
