@@ -159,4 +159,158 @@ npm run lint
 
 ## Licença
 
-Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes. 
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📄 Rotas Principais
+
+| Rota                | Descrição                                                                 |
+|---------------------|---------------------------------------------------------------------------|
+| `/`                 | Página inicial para encurtar URLs, visualizar e copiar links.              |
+| `/urls`             | Lista de URLs criadas pelo usuário, com filtros e paginação.               |
+| `/stats/[code]`     | Estatísticas detalhadas de acesso para uma URL específica.                 |
+| `/stats/all`        | Estatísticas agregadas de todas as URLs do usuário/admin.                  |
+| `/admin/users`      | Painel administrativo para gerenciar usuários (apenas para admins).        |
+| `/auth/login`       | Tela de login de usuário.                                                  |
+| `/auth/profile`     | Perfil do usuário autenticado.                                             |
+| `/404`, `/500`      | Páginas de erro personalizadas.                                            |
+
+---
+
+## 🛠️ Endpoints de API
+
+### `POST /api/shorten`
+- **Descrição:** Cria uma nova URL encurtada.
+- **Body:**  
+  ```json
+  {
+    "longUrl": "https://exemplo.com",
+    "alias": "meulink", // opcional
+    "isPublic": true    // opcional
+  }
+  ```
+- **Resposta:**  
+  ```json
+  {
+    "urlCode": "meulink",
+    "longUrl": "https://exemplo.com",
+    "clicks": 0,
+    ...
+  }
+  ```
+
+### `GET /api/check/[alias]`
+- **Descrição:** Verifica se um alias existe e retorna a URL original.
+- **Resposta:**  
+  ```json
+  {
+    "exists": true,
+    "longUrl": "https://exemplo.com"
+  }
+  ```
+
+### `GET /api/admin/users`
+- **Descrição:** Lista todos os usuários (apenas admin).
+- **Resposta:**  
+  ```json
+  [
+    { "email": "...", "isAdmin": true, ... }
+  ]
+  ```
+
+### `PUT /api/admin/users`
+- **Descrição:** Atualiza status ou permissões de um usuário.
+- **Body:**  
+  ```json
+  {
+    "userId": "id_do_usuario",
+    "status": "ativo" // ou "inativo"
+    // ou
+    "isAdmin": true
+  }
+  ```
+
+> **Obs:** Existem outros endpoints para autenticação, estatísticas, etc. Consulte o código em `/pages/api/` para detalhes.
+
+---
+
+## ⚛️ Contextos e Hooks Customizados
+
+### `ToastContext`
+- **Descrição:** Contexto global para exibir notificações (toasts) na interface.
+- **Exemplo de uso:**
+  ```js
+  import { useToast } from '../src/contexts/ToastContext';
+  const { showToast } = useToast();
+  showToast('Mensagem de sucesso!', 'success');
+  ```
+
+### `useClipboard`
+- **Descrição:** Hook para copiar texto para a área de transferência.
+- **Exemplo:**
+  ```js
+  const { copy, copied } = useClipboard();
+  copy('Texto para copiar');
+  ```
+
+### `useDebounce`
+- **Descrição:** Hook para debouncing de valores (ex: buscas).
+- **Exemplo:**
+  ```js
+  const debouncedValue = useDebounce(value, 500);
+  ```
+
+---
+
+## 🛡️ Painel Administrativo
+
+- **Acesso:** Apenas usuários com permissão de admin.
+- **Funcionalidades:**
+  - Listar todos os usuários cadastrados.
+  - Ativar/desativar contas de usuários.
+  - Conceder ou remover permissões de administrador.
+  - Visualizar estatísticas globais.
+- **Proteção:** Rotas protegidas por middleware e componentes (`RequireAdmin`).
+
+---
+
+## 🔐 Fluxo de Autenticação
+
+- **Login:** Usuários autenticam via `/auth/login` (NextAuth).
+- **Permissões:** 
+  - Usuários comuns: podem criar, listar e ver estatísticas de suas URLs.
+  - Admins: acesso ao painel administrativo, podem gerenciar usuários.
+- **Proteção de rotas:** 
+  - Rotas sensíveis usam componentes como `RequireAuth` e `RequireAdmin`.
+- **Logout:** Disponível no menu do usuário.
+
+---
+
+## 🚀 Práticas Recomendadas para Produção
+
+- **Domínio real:** Configure um domínio próprio e utilize HTTPS (SSL).
+- **Variáveis sensíveis:** Nunca exponha segredos em arquivos versionados. Use `.env` e variáveis de ambiente.
+- **Backups:** Implemente backups automáticos para o volume do MongoDB.
+- **Escalabilidade:** Considere múltiplas instâncias da aplicação e balanceamento de carga.
+- **Monitoramento:** Utilize ferramentas de monitoramento para containers e logs.
+- **Segurança:** Habilite autenticação no MongoDB e restrinja acessos externos.
+
+---
+
+## 🧪 Testes
+
+- **Rodar testes:**  
+  ```bash
+  npm test
+  ```
+- **Tipos de testes:**  
+  - Testes unitários para funções e serviços.
+  - Testes de integração para endpoints de API.
+- **Adicionar novos testes:**  
+  - Crie arquivos de teste em `__tests__/` ou conforme padrão do projeto.
+  - Utilize o Jest para escrever e rodar os testes.
+- **Exemplo de teste:**
+  ```js
+  test('deve encurtar uma URL', async () => {
+    // ...seu teste aqui
+  });
+  ``` 
