@@ -17,10 +17,13 @@ export default async function handler(req, res) {
     const { db } = await connectToDatabase();
     
     // Dados do administrador padrão
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+      throw new Error('ADMIN_EMAIL e ADMIN_PASSWORD devem estar definidos nas variáveis de ambiente');
+    }
     const adminData = {
       name: "Administrador",
-      email: "admin@example.com",
-      password: bcrypt.hashSync("admin123", 10),
+      email: process.env.ADMIN_EMAIL,
+      password: bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10),
       isAdmin: true,
       status: "ativo",
       createdAt: new Date()

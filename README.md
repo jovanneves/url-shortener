@@ -46,7 +46,7 @@ Cliente → Nginx (porta 80) → Aplicação Next.js (porta 3000) → MongoDB/Re
 Para acessar a aplicação usando o nome `urlshortener` ao invés de `localhost`, é necessário adicionar uma entrada no arquivo hosts do seu sistema:
 
 ```
-127.0.0.1 urlshortener
+127.0.0.1 urlshortener go
 ```
 
 #### Como editar o arquivo hosts:
@@ -68,6 +68,7 @@ sudo nano /etc/hosts
 Após fazer essa configuração, reinicie os containers (se necessário) e acesse a aplicação em seu navegador usando:
 ```
 http://urlshortener
+http://go
 ```
 
 ## Tecnologias Utilizadas
@@ -88,6 +89,38 @@ http://urlshortener
   - Docker
   - Docker Compose
   - Nginx
+
+## Variáveis de Ambiente
+
+Crie um arquivo `.env` (ou configure no Docker Compose) com as seguintes variáveis:
+
+```env
+NEXTAUTH_URL=http://urlshortener
+NEXTAUTH_SECRET=sua-chave-secreta-aqui
+MONGODB_URI=mongodb://usuario:senha@host:27017/urlshortener?authSource=admin
+ADMIN_EMAIL=admin@seudominio.com
+ADMIN_PASSWORD=sua-senha-admin-aqui
+```
+
+- Gere uma chave segura para o `NEXTAUTH_SECRET` com:  
+  `openssl rand -base64 32`
+- **Nunca compartilhe seu arquivo `.env` real publicamente.**
+- O usuário administrador será criado automaticamente na primeira execução com o email e senha definidos acima.
+
+### Exemplo de configuração no Docker Compose
+
+```yaml
+environment:
+  - NEXTAUTH_URL=http://urlshortener
+  - NEXTAUTH_SECRET=sua-chave-secreta-aqui
+  - MONGODB_URI=mongodb://usuario:senha@host:27017/urlshortener?authSource=admin
+  - ADMIN_EMAIL=admin@seudominio.com
+  - ADMIN_PASSWORD=sua-senha-admin-aqui
+```
+
+### Sobre o NEXTAUTH_SECRET
+
+`NEXTAUTH_SECRET` é uma chave secreta usada para proteger as sessões de autenticação. Gere uma string forte e nunca compartilhe publicamente.
 
 ## Acesso Inicial
 

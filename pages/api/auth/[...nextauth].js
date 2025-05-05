@@ -70,7 +70,12 @@ export const authOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
-  secret: process.env.NEXTAUTH_SECRET || "nova-chave-secreta-segura-para-aplicacao",
+  secret: (() => {
+    if (!process.env.NEXTAUTH_SECRET) {
+      throw new Error('NEXTAUTH_SECRET deve estar definida nas variáveis de ambiente');
+    }
+    return process.env.NEXTAUTH_SECRET;
+  })(),
   debug: process.env.NODE_ENV === "development",
 };
 

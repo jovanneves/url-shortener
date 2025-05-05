@@ -5,17 +5,20 @@ async function initializeAdmin() {
   console.log('Iniciando script de criação do usuário admin...');
   
   try {
-    // Conectar ao MongoDB
-    const uri = process.env.MONGODB_URI || 'mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin';
-    const client = new MongoClient(uri);
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI deve estar definida nas variáveis de ambiente');
+    }
+    const client = new MongoClient(process.env.MONGODB_URI);
     await client.connect();
     console.log('Conectado ao MongoDB com sucesso');
 
     const db = client.db('urlshortener');
     
-    // Usar variáveis de ambiente ou valores padrão
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@sistema.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || '@dm1n';
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+      throw new Error('ADMIN_EMAIL e ADMIN_PASSWORD devem estar definidos nas variáveis de ambiente');
+    }
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
     
     // Dados do administrador
     const adminData = {
