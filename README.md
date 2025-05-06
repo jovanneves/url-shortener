@@ -266,34 +266,6 @@ Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICE
 
 ---
 
-## ⚛️ Contextos e Hooks Customizados
-
-### `ToastContext`
-- **Descrição:** Contexto global para exibir notificações (toasts) na interface.
-- **Exemplo de uso:**
-  ```js
-  import { useToast } from '../src/contexts/ToastContext';
-  const { showToast } = useToast();
-  showToast('Mensagem de sucesso!', 'success');
-  ```
-
-### `useClipboard`
-- **Descrição:** Hook para copiar texto para a área de transferência.
-- **Exemplo:**
-  ```js
-  const { copy, copied } = useClipboard();
-  copy('Texto para copiar');
-  ```
-
-### `useDebounce`
-- **Descrição:** Hook para debouncing de valores (ex: buscas).
-- **Exemplo:**
-  ```js
-  const debouncedValue = useDebounce(value, 500);
-  ```
-
----
-
 ## 🛡️ Painel Administrativo
 
 - **Acesso:** Apenas usuários com permissão de admin.
@@ -328,22 +300,3 @@ Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICE
 - **Segurança:** Habilite autenticação no MongoDB e restrinja acessos externos.
 
 ---
-
-## 🧪 Testes
-
-- **Rodar testes:**  
-  ```bash
-  npm test
-  ```
-- **Tipos de testes:**  
-  - Testes unitários para funções e serviços.
-  - Testes de integração para endpoints de API.
-- **Adicionar novos testes:**  
-  - Crie arquivos de teste em `__tests__/` ou conforme padrão do projeto.
-  - Utilize o Jest para escrever e rodar os testes.
-- **Exemplo de teste:**
-  ```js
-  test('deve encurtar uma URL', async () => {
-    // ...seu teste aqui
-  });
-  ``` 
