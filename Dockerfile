@@ -1,6 +1,9 @@
 # Imagem base com Node.js
 FROM node:18-alpine
 
+# Instalar Redis
+RUN apk add --no-cache redis
+
 # Diretório de trabalho no container
 WORKDIR /app
 
@@ -16,8 +19,8 @@ COPY . .
 # Buildar a aplicação Next.js
 RUN npm run build
 
-# Expor a porta que a aplicação usará
-EXPOSE 3000
+# Expor as portas que a aplicação e o Redis usarão
+EXPOSE 3000 6379
 
 # Script de inicialização
 COPY docker-entrypoint.sh /docker-entrypoint.sh

@@ -14,17 +14,6 @@ services:
     networks:
       - url-shortener-network
 
-  redis:
-    image: redis:alpine
-    container_name: redis-urlshortener
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - url-shortener-network
-    restart: unless-stopped
-
   app:
     build:
       context: .
@@ -34,7 +23,7 @@ services:
       - "3000"
     environment:
       - MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://localhost:6379
       - NEXTAUTH_URL=http://urlshortener
       - NEXTAUTH_SECRET=your_nextauth_secret_key
       - ADMIN_EMAIL=admin@sistema.com
@@ -42,7 +31,6 @@ services:
       - NEXT_PUBLIC_APP_URL=http://urlshortener
     depends_on:
       - mongodb
-      - redis
     networks:
       - url-shortener-network
     restart: unless-stopped
@@ -65,5 +53,4 @@ networks:
     driver: bridge
 
 volumes:
-  mongodb_data:
-  redis_data: 
+  mongodb_data: 

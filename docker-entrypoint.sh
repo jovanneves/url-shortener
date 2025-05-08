@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Iniciar o Redis em background
+redis-server --daemonize yes
+
 # Esperar o MongoDB se tornar disponível
 echo "Aguardando MongoDB ficar disponível..."
 sleep 5

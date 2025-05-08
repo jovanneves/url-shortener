@@ -32,13 +32,12 @@ A aplicação estará disponível em http://urlshortener
 
 O sistema está configurado para ser executado com os seguintes containers:
 - **MongoDB**: Banco de dados
-- **Redis**: Sistema de cache para melhorar performance
-- **App**: Aplicação Next.js
+- **App**: Aplicação Next.js (inclui o Redis embutido no mesmo container)
 - **Nginx**: Servidor web que funciona como proxy reverso
 
 O fluxo de requisições é:
 ```
-Cliente → Nginx (porta 80) → Aplicação Next.js (porta 3000) → MongoDB/Redis
+Cliente → Nginx (porta 80) → Aplicação Next.js + Redis (porta 3000/6379) → MongoDB
 ```
 
 ### Configuração do Domínio Local
@@ -68,7 +67,6 @@ sudo nano /etc/hosts
 Após fazer essa configuração, reinicie os containers (se necessário) e acesse a aplicação em seu navegador usando:
 ```
 http://urlshortener
-http://go
 ```
 
 ## Tecnologias Utilizadas
@@ -97,10 +95,14 @@ Crie um arquivo `.env` (ou configure no Docker Compose) com as seguintes variáv
 ```env
 NEXTAUTH_URL=http://urlshortener
 NEXTAUTH_SECRET=sua-chave-secreta-aqui
-MONGODB_URI=mongodb://usuario:senha@host:27017/urlshortener?authSource=admin
+MONGODB_URI=mongodb://usuario:senha@mongodb:27017/urlshortener?authSource=admin
 ADMIN_EMAIL=admin@seudominio.com
 ADMIN_PASSWORD=sua-senha-admin-aqui
 ```
+
+> **Importante:**
+> - Quando rodando com Docker Compose, use sempre `mongodb` como host do banco na variável `MONGODB_URI` (exemplo: `mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin`).
+> - Não use `localhost` ou `127.0.0.1` como host do MongoDB dentro do container da aplicação.
 
 - Gere uma chave segura para o `NEXTAUTH_SECRET` com:  
   `openssl rand -base64 32`
@@ -113,7 +115,7 @@ ADMIN_PASSWORD=sua-senha-admin-aqui
 environment:
   - NEXTAUTH_URL=http://urlshortener
   - NEXTAUTH_SECRET=sua-chave-secreta-aqui
-  - MONGODB_URI=mongodb://usuario:senha@host:27017/urlshortener?authSource=admin
+  - MONGODB_URI=mongodb://admin:password@mongodb:27017/urlshortener?authSource=admin
   - ADMIN_EMAIL=admin@seudominio.com
   - ADMIN_PASSWORD=sua-senha-admin-aqui
 ```
