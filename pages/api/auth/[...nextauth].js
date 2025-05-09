@@ -3,6 +3,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "../../../lib/mongodb";
 
+// Log temporário para depuração
+console.log('ENV NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET);
+console.log('ENV NODE_ENV:', process.env.NODE_ENV);
+console.log('ENV NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+console.log('Todas as variáveis de ambiente:', Object.keys(process.env));
+
 export const authOptions = {
   providers: [
     CredentialsProvider({
